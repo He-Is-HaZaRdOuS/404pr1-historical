@@ -1,0 +1,1 @@
+Hello CMake from a text file!
