@@ -1,3 +1,4 @@
+#include <main.h>
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -17,6 +18,7 @@ int main(){
         }
         fileP.close();
     }
+    std::cout << SOMEIMPORTANTCONSTANT;
 
     return 0;
 }
