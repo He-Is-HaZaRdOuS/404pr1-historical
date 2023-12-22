@@ -3,6 +3,8 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <vector>
+#include "Timeslot.h"
 typedef std::string String;
 typedef std::fstream fstream;
 
@@ -31,6 +33,8 @@ int main(){
     else std::cout << "pre-standard C++." << __cplusplus;
     std::cout << "\n";
     */
+
+    std::vector<std::vector<Timeslot*>> table;
 
     CSV test{RESOURCES_PATH "test.csv"};
     test.printRows();
