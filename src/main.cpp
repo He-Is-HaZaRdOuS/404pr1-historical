@@ -1,3 +1,4 @@
+#include <CSV.h>
 #include <main.h>
 #include <iostream>
 #include <fstream>
@@ -6,6 +7,7 @@ typedef std::string String;
 typedef std::fstream fstream;
 
 int main(){
+    /*
     std::cout << "Hello CMake!\n";
 
     fstream fileP;
@@ -28,6 +30,10 @@ int main(){
     else if (__cplusplus == 199711L) std::cout << "C++98";
     else std::cout << "pre-standard C++." << __cplusplus;
     std::cout << "\n";
+    */
+
+    CSV test{RESOURCES_PATH "test.csv"};
+    test.printRows();
 
     return 0;
 }
