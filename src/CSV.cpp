@@ -48,3 +48,7 @@ void CSV::printRows(const std::string&separator) const {
         std::cout << std::endl;
     }
 }
+
+Vector2<String> CSV::getData() {
+    return m_data;
+}

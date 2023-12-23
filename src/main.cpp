@@ -1,12 +1,14 @@
-#include <CSV.h>
-#include <main.h>
+#include "main.h"
+#include "CSV.h"
+#include "Timeslot.h"
+#include "Typedefs.h"
 #include <iostream>
 #include <fstream>
-#include <string>
-#include <vector>
-#include "Timeslot.h"
-typedef std::string String;
-typedef std::fstream fstream;
+
+#define courseColumnSize 4
+#define classroomColumnSize 2
+
+std::vector<std::vector<String>> courseData;
 
 int main(){
     /*
@@ -34,10 +36,26 @@ int main(){
     std::cout << "\n";
     */
 
-    std::vector<std::vector<Timeslot*>> table;
+    Timeslot* table[7][108];
+    CSV test{RESOURCES_PATH "course-list1.csv"};
+    courseData = test.getData();
 
-    CSV test{RESOURCES_PATH "test.csv"};
-    test.printRows();
+    table[0][0] = new Timeslot();
+    table[0][0]->currentCourse = new Course(courseData.at(0).at(1),
+        courseData.at(0).at(2),
+        stoi(courseData.at(0).at(3)));
+
+    std::cout << table[0][0]->currentCourse->code << std::endl;
+    std::cout << table[0][0]->currentCourse->professorName << std::endl;
+    std::cout << table[0][0]->currentCourse->examDuration << std::endl;
+
+    /*
+    for(int i = 0; i < courseColumnSize; i++)
+        std::cout << courseData.at(3196).at(i) << " ";
+    std::cout << std::endl;
+    std::cout << courseData.capacity();
+    */
+
 
     return 0;
 }

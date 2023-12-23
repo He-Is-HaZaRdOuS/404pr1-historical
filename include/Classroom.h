@@ -1,13 +1,11 @@
 #ifndef CLASSROOM_H
 #define CLASSROOM_H
 
-#include <string>
-typedef std::string String;
+#include "Typedefs.h"
 
 class Classroom {
 public:
-    Classroom(int capacity, String id);
-    Classroom();
+    explicit Classroom(int capacity, String id);
     ~Classroom();
     int capacity;
     String id;

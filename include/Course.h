@@ -1,21 +1,18 @@
 #ifndef COURSE_H
 #define COURSE_H
 
-#include "Student.h"
-#include <vector>
-#include <string>
-typedef std::string String;
+#include "Typedefs.h"
 
 
 class Course {
 public:
-    Course(String code, String studentCount, String professorName, int examDuration);
-    Course();
+    explicit Course(String professorName, String code, int examDuration, int studentCount = 0);
     ~Course();
     int studentCount;
     int examDuration;
-    std::vector<Student> studentList;
+    //std::vector<Student*> studentList;
     String professorName;
+    String code;
 
 };
 
