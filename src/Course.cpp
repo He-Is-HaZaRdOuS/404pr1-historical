@@ -7,6 +7,10 @@ Course::Course(String professorName, String code, int examDuration, int studentC
     this->professorName = professorName;
 }
 
+Course::~Course() {
+
+}
+
 
 
 
