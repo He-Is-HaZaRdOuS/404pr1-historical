@@ -5,8 +5,13 @@
 #include <iostream>
 #include <fstream>
 
-#define courseColumnSize 4
 #define classroomColumnSize 2
+#define courseColumnSize 4
+#define idColumn 0
+#define capacityColumn 1
+#define professorColumn 1
+#define codeColumn 2
+#define durationColumn 3
 
 std::vector<std::vector<String>> courseData;
 
@@ -54,7 +59,7 @@ int main(){
     std::cout << table[0][1].currentCourse.professorName << std::endl;
     std::cout << table[0][1].currentCourse.examDuration << std::endl;
 
-    int count = test.filter(2, [](const String&value) {
+    u_int32_t count = test.filter(codeColumn, [](const String&value) {
         return value == "CENG463";
     }).size();
 

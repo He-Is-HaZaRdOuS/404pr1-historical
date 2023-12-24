@@ -52,14 +52,14 @@ void CSV::printRows(const std::string&separator) const {
 }
 
 Vector2<String> CSV::filter(const int column, bool (*filter)(const std::string&)) const {
-    auto mathces = std::vector<std::vector<std::string>>(0);
-    if (column < 0 || column > m_cols) return mathces;
+    auto matches = Vector2<String>(0);
+    if (column < 0 || column > m_cols) return matches;
     for (auto&row : m_data) {
         if (filter(row.at(column))) {
-            mathces.push_back(row);
+            matches.push_back(row);
         }
     }
-    return mathces;
+    return matches;
 }
 
 Vector2<String> CSV::getData() {
