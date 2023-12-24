@@ -1,3 +1,4 @@
+#pragma once
 #ifndef CLASSROOM_H
 #define CLASSROOM_H
 

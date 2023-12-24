@@ -1,3 +1,4 @@
+#pragma once
 #ifndef STUDENT_H
 #define STUDENT_H
 #include <vector>
@@ -9,7 +10,7 @@ public:
     explicit Student(int id);
     ~Student();
     int id;
-    std::vector<Course*> courseList;
+    std::vector<Course> courseList;
 
 };
 

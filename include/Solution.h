@@ -1,4 +1,4 @@
-
+#pragma once
 #ifndef SOLUTION_H
 #define SOLUTION_H
 

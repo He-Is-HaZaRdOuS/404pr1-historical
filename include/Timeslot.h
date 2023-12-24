@@ -1,3 +1,4 @@
+#pragma once
 #ifndef TIMESLOT_H
 #define TIMESLOT_H
 
