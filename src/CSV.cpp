@@ -1,6 +1,7 @@
 #include "CSV.h"
 
 #include <iostream>
+#include <Typedefs.h>
 
 CSV::CSV(const char* path, const char separator) {
     FILE* fp = fopen(path, "r");
@@ -36,6 +37,7 @@ CSV::CSV(const char* path, const char separator) {
         }
     }
     m_cols = m_data.at(0).size();
+    m_data.pop_back();
 }
 
 void CSV::printRows(const std::string&separator) const {
@@ -47,6 +49,17 @@ void CSV::printRows(const std::string&separator) const {
         }
         std::cout << std::endl;
     }
+}
+
+Vector2<String> CSV::filter(const int column, bool (*filter)(const std::string&)) const {
+    auto mathces = std::vector<std::vector<std::string>>(0);
+    if (column < 0 || column > m_cols) return mathces;
+    for (auto&row : m_data) {
+        if (filter(row.at(column))) {
+            mathces.push_back(row);
+        }
+    }
+    return mathces;
 }
 
 Vector2<String> CSV::getData() {

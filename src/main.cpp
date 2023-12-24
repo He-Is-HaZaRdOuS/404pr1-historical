@@ -54,6 +54,12 @@ int main(){
     std::cout << table[0][1].currentCourse.professorName << std::endl;
     std::cout << table[0][1].currentCourse.examDuration << std::endl;
 
+    int count = test.filter(2, [](const String&value) {
+        return value == "CENG463";
+    }).size();
+
+    std::cout << "There are " << count << " students taking CENG463";
+
 
     /*
     for(int i = 0; i < courseColumnSize; i++)

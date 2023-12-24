@@ -18,6 +18,14 @@ public:
     [[nodiscard]] size_t getRowCount() const { return m_rows; }
 
     Vector2<String> getData();
+
+    /**
+     * \brief Constructs a new vector of all rows having a column with similar values
+     * \param column index of the column whose value will be tested
+     * \param filter function to be used in testing, returns true when value passes the test
+     * \return an array containing copy of rows that pass the test.
+     */
+    Vector2<String> filter(int column, bool (*filter)(const std::string&value)) const;
 };
 
 #endif //CSV_H
