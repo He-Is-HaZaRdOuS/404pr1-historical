@@ -36,18 +36,24 @@ int main(){
     std::cout << "\n";
     */
 
-    Timeslot* table[7][108];
+    Timeslot table[7][108];
     CSV test{RESOURCES_PATH "course-list1.csv"};
     courseData = test.getData();
 
-    table[0][0] = new Timeslot();
-    table[0][0]->currentCourse = new Course(courseData.at(0).at(1),
-        courseData.at(0).at(2),
-        stoi(courseData.at(0).at(3)));
+    table[0][1].status = OCCUPIED;
+    table[0][1].currentCourse.professorName = courseData.at(0).at(1);
+    table[0][1].currentCourse.code = courseData.at(0).at(2);
+    table[0][1].currentCourse.examDuration = std::stoi(courseData.at(0).at(3));
+    table[0][1].currentCourse.studentCount = 0;
 
-    std::cout << table[0][0]->currentCourse->code << std::endl;
-    std::cout << table[0][0]->currentCourse->professorName << std::endl;
-    std::cout << table[0][0]->currentCourse->examDuration << std::endl;
+    std::cout << table[0][0].currentCourse.code << std::endl;
+    std::cout << table[0][0].currentCourse.professorName << std::endl;
+    std::cout << table[0][0].currentCourse.examDuration << std::endl;
+
+    std::cout << table[0][1].currentCourse.code << std::endl;
+    std::cout << table[0][1].currentCourse.professorName << std::endl;
+    std::cout << table[0][1].currentCourse.examDuration << std::endl;
+
 
     /*
     for(int i = 0; i < courseColumnSize; i++)

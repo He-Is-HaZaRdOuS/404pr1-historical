@@ -1,6 +1,8 @@
 #include "Timeslot.h"
 
-Timeslot::Timeslot() {
-
+Timeslot::Timeslot(): currentCourse("---","---",0,0), status(AVAILABLE) {
 }
 
+Timeslot::~Timeslot() {
+
+}

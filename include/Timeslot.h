@@ -3,12 +3,14 @@
 
 #include "Course.h"
 
+typedef enum TimeSlotStatus {AVAILABLE,OCCUPIED} TimeSlotStatus;
+
 class Timeslot {
 public:
     Timeslot();
     ~Timeslot();
-    Course* currentCourse;
-
+    Course currentCourse;
+    TimeSlotStatus status;
 };
 
 
