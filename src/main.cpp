@@ -4,6 +4,7 @@
 #include "Typedefs.h"
 #include <iostream>
 #include <fstream>
+#include <cstdint>
 
 #define classroomColumnSize 2
 #define courseColumnSize 4
@@ -59,7 +60,7 @@ int main(){
     std::cout << table[0][1].currentCourse.professorName << std::endl;
     std::cout << table[0][1].currentCourse.examDuration << std::endl;
 
-    u_int32_t count = test.filter(codeColumn, [](const String&value) {
+    uint32_t count = test.filter(codeColumn, [](const String&value) {
         return value == "CENG463";
     }).size();
 
