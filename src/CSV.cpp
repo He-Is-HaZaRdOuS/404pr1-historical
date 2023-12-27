@@ -62,6 +62,18 @@ Vector2<String> CSV::filter(const int column, bool (*filter)(const std::string&)
     return matches;
 }
 
+
+Vector2<String> CSV::filter(int column, std::string&value) const {
+    auto matches = Vector2<String>(0);
+    if (column < 0 || column > m_cols) return matches;
+    for (auto&row : m_data) {
+        if (row.at(column) == value) {
+            matches.push_back(row);
+        }
+    }
+    return matches;
+}
+
 Vector2<String> CSV::getData() {
     return m_data;
 }

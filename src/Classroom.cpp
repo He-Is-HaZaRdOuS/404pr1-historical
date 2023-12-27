@@ -5,4 +5,4 @@ Classroom::Classroom(int capacity, String id) {
     this->id = id;
 }
 
-
+Classroom::~Classroom() = default;

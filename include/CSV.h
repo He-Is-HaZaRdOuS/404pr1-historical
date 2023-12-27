@@ -27,6 +27,8 @@ public:
      * \return an array containing copy of rows that pass the test.
      */
     Vector2<String> filter(int column, bool (*filter)(const std::string&value)) const;
+
+    Vector2<String> filter(int column, std::string&value) const;
 };
 
 #endif //CSV_H

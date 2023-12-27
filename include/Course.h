@@ -2,6 +2,8 @@
 #ifndef COURSE_H
 #define COURSE_H
 
+#include <Classroom.h>
+
 #include "Typedefs.h"
 
 
@@ -14,7 +16,8 @@ public:
     //std::vector<Student*> studentList;
     String professorName;
     String code;
-
+    std::vector<Course> conflictingCourses;
+    std::vector<Classroom> classrooms;
 };
 
 
