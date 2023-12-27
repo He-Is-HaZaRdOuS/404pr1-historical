@@ -34,7 +34,7 @@ int main(){
             courses[i].classrooms.push_back(classrooms[j]);
         }
     }
-
+/*
     std::cout << courses.at(0).code << " " << courses.at(0).studentList.size() << std::endl;
     for (const auto &item: courses.at(0).studentList) {
         std::cout << item.id << std::endl;
@@ -44,7 +44,7 @@ int main(){
     for (int i = 0; i < courses.at(0).conflictingCourses.size(); ++i) {
         std::cout << courses.at(0).conflictingCourses.at(i).code << std::endl;
     }
-
+*/
     return 0;
 }
 
@@ -77,26 +77,29 @@ std::stoi(row.at(durationColumn)), studentCount);
     unsigned long courseSize = courses.size();
 
     for (int i = 0; i < courseSize; ++i) {
+        bool skip = false;
         unsigned long L1S = courses.at(i).studentList.size();
-        for (int j = 0; j < courseSize; ++j) {
-            unsigned L2S = courses.at(i).studentList.size();
+        for (int j = 0; j < courseSize && !skip; ++j) {
+            unsigned L2S = courses.at(j).studentList.size();
             if (i != j) {
-                for (int k = 0; k < L1S; k++) {
-                    for (int l = 0; l < L2S; l++) {
-                        if (courses.at(i).studentList.at(k).id == courses.at(i).studentList.at(l).id) {
-                            bool skip = false;
+                for (int k = 0; k < L1S && !skip; k++) {
+                    for (int l = 0; l < L2S && !skip; l++) {
+                        if (courses.at(i).studentList.at(k).id == courses.at(j).studentList.at(l).id) {
+
                             unsigned long L1C = courses.at(j).conflictingCourses.size();
                             for (int o = 0; o < L1C; ++o) {
                                 if (courses.at(j).conflictingCourses.at(o).code == courses.at(i).code) {
+                                    std::cout << courses.at(j).conflictingCourses.at(o).code << " already conflicts with " << courses.at(i).code << std::endl;
                                     skip = true;
                                     break;
                                 }
-                            }
-                            if (!skip) {
-                                courses.at(i).conflictingCourses.push_back(courses.at(j));
-                                courses.at(j).conflictingCourses.push_back(courses.at(i));
-                            }
 
+                            }
+                                if(!skip && courses.at(i).code != courses.at(j).code){
+                                    courses.at(i).conflictingCourses.push_back(courses.at(j));
+                                    courses.at(j).conflictingCourses.push_back(courses.at(i));
+                                    std::cout << courses.at(i).code << " conflicts with " << courses.at(j).code << std::endl;
+                                }
                         }
                     }
                 }
