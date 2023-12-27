@@ -29,22 +29,21 @@ int main(){
 
     Timeslot timetable[7][108];
 
-    std::cout << "Classrooms" << std::endl;
-    for (const auto& classroom: classrooms) {
-        std::cout << classroom.id << " " << classroom.capacity << std::endl;
+    for (int i = 0; i < courses.size(); ++i) {
+        for (int j = 0; j < classrooms.size(); ++j) {
+            courses[i].classrooms.push_back(classrooms[j]);
+        }
     }
 
-    int totalDur = 0;
-    std::cout << "Courses" << std::endl;
-    for (const auto& course: courses) {
-        totalDur += course.examDuration;
-        std::cout << course.code << " "
-            << course.professorName << " "
-            << course.examDuration << " "
-            << course.studentCount << std::endl;
+    std::cout << courses.at(0).code << " " << courses.at(0).studentList.size() << std::endl;
+    for (const auto &item: courses.at(0).studentList) {
+        std::cout << item.id << std::endl;
     }
-    std::cout << courses.size() << " " << totalDur;
 
+    std::cout << courses.at(0).code << "*" << std::endl;
+    for (int i = 0; i < courses.at(0).conflictingCourses.size(); ++i) {
+        std::cout << courses.at(0).conflictingCourses.at(i).code << std::endl;
+    }
 
     return 0;
 }
@@ -61,10 +60,48 @@ std::vector<Course> loadCourses(const char*path) {
         return false;
     });
 
-    for (std::vector<String> row : uniqueCourses) {
+    for (std::vector<String>row : uniqueCourses) {
         const int studentCount = courseList.filter(codeColumn, row.at(codeColumn)).size();
         courses.emplace_back(row.at(professorColumn), row.at(codeColumn),
 std::stoi(row.at(durationColumn)), studentCount);
+    }
+
+    for (auto&course: courses) {
+        Vector2<String> rows = courseList.filter(codeColumn, course.code);
+        for (std::vector<String> row : rows) {
+            Student s{std::stoi(row.at(idColumn))};
+            course.studentList.push_back(s);
+        }
+    }
+
+    unsigned long courseSize = courses.size();
+
+    for (int i = 0; i < courseSize; ++i) {
+        unsigned long L1S = courses.at(i).studentList.size();
+        for (int j = 0; j < courseSize; ++j) {
+            unsigned L2S = courses.at(i).studentList.size();
+            if (i != j) {
+                for (int k = 0; k < L1S; k++) {
+                    for (int l = 0; l < L2S; l++) {
+                        if (courses.at(i).studentList.at(k).id == courses.at(i).studentList.at(l).id) {
+                            bool skip = false;
+                            unsigned long L1C = courses.at(j).conflictingCourses.size();
+                            for (int o = 0; o < L1C; ++o) {
+                                if (courses.at(j).conflictingCourses.at(o).code == courses.at(i).code) {
+                                    skip = true;
+                                    break;
+                                }
+                            }
+                            if (!skip) {
+                                courses.at(i).conflictingCourses.push_back(courses.at(j));
+                                courses.at(j).conflictingCourses.push_back(courses.at(i));
+                            }
+
+                        }
+                    }
+                }
+            }
+        }
     }
 
     return courses;
