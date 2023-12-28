@@ -27,7 +27,7 @@ CSV::CSV(const char* path, const char separator) {
             if (m_cols == -1)
                 m_cols = col;
             if (col != m_cols) {
-                std::cout << m_rows << std::endl;
+                //std::cout << m_rows << std::endl;
                 throw errno;
             }
 

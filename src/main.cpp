@@ -6,12 +6,12 @@
 #include <cstring>
 #include <iostream>
 #include <unordered_map>
+#include <iostream>
+#include <fstream>
 
 #include "CSV.h"
 #include "Timeslot.h"
 #include "Typedefs.h"
-#include <iostream>
-#include <fstream>
 
 #define classroomColumnSize 2
 #define courseColumnSize 4
