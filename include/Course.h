@@ -3,9 +3,6 @@
 #define COURSE_H
 
 #include <Classroom.h>
-#include <Student.h>
-
-
 #include "Typedefs.h"
 
 
@@ -15,10 +12,10 @@ public:
     ~Course();
     int studentCount;
     int examDuration;
-    std::vector<Student> studentList;
     String professorName;
     String code;
-    std::vector<Course> conflictingCourses;
+    std::vector<int> studentList;
+    std::vector<String> conflictingCourses;
     std::vector<Classroom> classrooms;
 };
 

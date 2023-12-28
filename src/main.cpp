@@ -1,7 +1,9 @@
 #include "main.h"
 
+#include <algorithm>
 #include <Classroom.h>
 #include <Course.h>
+#include <cstring>
 #include <iostream>
 #include <unordered_map>
 
@@ -25,26 +27,35 @@ std::vector<Classroom> loadClassrooms(const char*path);
 
 int main(){
     std::vector<Classroom> classrooms = loadClassrooms(RESOURCES_PATH "classroom.csv");
-    std::vector<Course> courses = loadCourses(RESOURCES_PATH "course-list1.csv");
+    std::vector<Course> courses = loadCourses(RESOURCES_PATH "t1.csv");
+
+    std::sort(courses.begin(), courses.end(), [](const Course& c1, const Course& c2) {
+        return (strcmp(c1.code.c_str(), c2.code.c_str()) > 0) ? true : false;
+    });
 
     Timeslot timetable[7][108];
 
-    for (int i = 0; i < courses.size(); ++i) {
-        for (int j = 0; j < classrooms.size(); ++j) {
-            courses[i].classrooms.push_back(classrooms[j]);
+    for (auto & course : courses) {
+        for (const auto & classroom : classrooms) {
+            course.classrooms.push_back(classroom);
         }
     }
-/*
+
+    /*
     std::cout << courses.at(0).code << " " << courses.at(0).studentList.size() << std::endl;
     for (const auto &item: courses.at(0).studentList) {
         std::cout << item.id << std::endl;
     }
+    */
 
-    std::cout << courses.at(0).code << "*" << std::endl;
-    for (int i = 0; i < courses.at(0).conflictingCourses.size(); ++i) {
-        std::cout << courses.at(0).conflictingCourses.at(i).code << std::endl;
+    /*print conflicting courses of each course*/
+    for(const Course& c : courses) {
+        std::cout << "*Courses that conflict with " << c.code << "*" << std::endl;
+        for (auto & conflictingCourse : c.conflictingCourses) {
+            std::cout << conflictingCourse << std::endl;
+        }
     }
-*/
+
     return 0;
 }
 
@@ -61,7 +72,7 @@ std::vector<Course> loadCourses(const char*path) {
     });
 
     for (std::vector<String>row : uniqueCourses) {
-        const int studentCount = courseList.filter(codeColumn, row.at(codeColumn)).size();
+        const unsigned long studentCount = courseList.filter(codeColumn, row.at(codeColumn)).size();
         courses.emplace_back(row.at(professorColumn), row.at(codeColumn),
 std::stoi(row.at(durationColumn)), studentCount);
     }
@@ -69,42 +80,43 @@ std::stoi(row.at(durationColumn)), studentCount);
     for (auto&course: courses) {
         Vector2<String> rows = courseList.filter(codeColumn, course.code);
         for (std::vector<String> row : rows) {
-            Student s{std::stoi(row.at(idColumn))};
+            int s = std::stoi(row.at(idColumn));
             course.studentList.push_back(s);
         }
+        //std::sort(course.studentList.begin(), course.studentList.end());
     }
 
-    unsigned long courseSize = courses.size();
-
+    const unsigned long courseSize = courses.size();
     for (int i = 0; i < courseSize; ++i) {
-        bool skip = false;
-        unsigned long L1S = courses.at(i).studentList.size();
-        for (int j = 0; j < courseSize && !skip; ++j) {
-            unsigned L2S = courses.at(j).studentList.size();
+        const unsigned long L1S = courses.at(i).studentList.size();
+        for (int j = 0; j < courseSize; ++j) {
+            bool skip = false;
+            const unsigned long L2S = courses.at(j).studentList.size();
             if (i != j) {
-                for (int k = 0; k < L1S && !skip; k++) {
-                    for (int l = 0; l < L2S && !skip; l++) {
-                        if (courses.at(i).studentList.at(k).id == courses.at(j).studentList.at(l).id) {
+                for (int k = 0; !skip && k < L1S; k++) {
+                    for (int l = 0; !skip && l < L2S; l++) {
+                        if (courses.at(i).studentList.at(k) == courses.at(j).studentList.at(l)) {
 
-                            unsigned long L1C = courses.at(j).conflictingCourses.size();
+                            const unsigned long L1C = courses.at(j).conflictingCourses.size();
                             for (int o = 0; o < L1C; ++o) {
-                                if (courses.at(j).conflictingCourses.at(o).code == courses.at(i).code) {
-                                    std::cout << courses.at(j).conflictingCourses.at(o).code << " already conflicts with " << courses.at(i).code << std::endl;
+                                if (courses.at(j).conflictingCourses.at(o) == courses.at(i).code) {
+                                    //std::cout << courses.at(j).conflictingCourses.at(o) << " already conflicts with " << courses.at(i).code << std::endl;
                                     skip = true;
                                     break;
                                 }
 
                             }
-                                if(!skip && courses.at(i).code != courses.at(j).code){
-                                    courses.at(i).conflictingCourses.push_back(courses.at(j));
-                                    courses.at(j).conflictingCourses.push_back(courses.at(i));
-                                    std::cout << courses.at(i).code << " conflicts with " << courses.at(j).code << std::endl;
-                                }
+                            if(!skip && courses.at(i).code != courses.at(j).code){
+                                courses.at(i).conflictingCourses.push_back(courses.at(j).code);
+                                courses.at(j).conflictingCourses.push_back(courses.at(i).code);
+                                std::cout << courses.at(i).code << " conflicts with " << courses.at(j).code << std::endl;
+                            }
                         }
                     }
                 }
             }
         }
+        std::sort(courses.at(i).conflictingCourses.begin(), courses.at(i).conflictingCourses.end());
     }
 
     return courses;

@@ -26,8 +26,11 @@ CSV::CSV(const char* path, const char separator) {
             col++;
             if (m_cols == -1)
                 m_cols = col;
-            if (col != m_cols)
+            if (col != m_cols) {
+                std::cout << m_rows << std::endl;
                 throw errno;
+            }
+
             col = 0;
             m_data.emplace_back();
             val = "";
