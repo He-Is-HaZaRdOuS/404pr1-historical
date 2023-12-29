@@ -1,10 +1,9 @@
 #include "Solution.h"
-#include <iostream>
 #include <cmath>
+#include <iostream>
 
 // constructor
-Solution::Solution(int dayNum, vector<Course> list) {
-    this->dayNum = dayNum;
+Solution::Solution(vector<Course> list) {
     this->courseList = list;
 }
 
@@ -55,7 +54,48 @@ void Solution::randomizedSuccesor() {
 
 // make first schedule according to a logic
 void Solution::initializeSchedule() {
+    int dayCount = 5;
+    int i, day, start = 0;
+    bool contiguous = false;
+    for(auto & course : courseList){
+        bool placed = false;
+        int timePartition = course.examDuration / TIMESLOTDURATION;
+        //std::cout << course.code << " " << timePartition <<  std::endl;
 
+        for(day = 0; !placed && day < dayCount; ++day){
+            for(i = 0; !placed && i < TIMESLOTCOUNT; ++i) {
+                contiguous = false;
+                if(timeTable[day][i].status == AVAILABLE){
+                    int timeLim = i + timePartition;
+                    for(int j = i; j < timeLim; ++j){
+                        if(timeTable[day][j].status != AVAILABLE){
+                            contiguous = true;
+                            break;
+                        }
+                    }
+                    if(!contiguous){
+                        //std::cout << ((contiguous) ? "true" : "false") << " " << i << std::endl;
+                        start = i;
+                        int timeDur = start + timePartition;
+                        for(i = start; i < timeDur; ++i){
+                            timeTable[day][i].status = OCCUPIED;
+                            timeTable[day][i].currentCourse = course;
+                        }
+                        placed = true;
+                        break;
+                }
+            }
+        }
+        /*
+         * Implement going to 3rd dimension
+         * if current dimension's timetable is full
+         */
+
+
+        }
+    }
+
+std::cout << "Finished";
 }
 
 // calculate cost

@@ -12,6 +12,7 @@
 #include "CSV.h"
 #include "Timeslot.h"
 #include "Typedefs.h"
+#include "Solution.h"
 
 #define classroomColumnSize 2
 #define courseColumnSize 4
@@ -33,13 +34,18 @@ int main(){
         return (strcmp(c1.code.c_str(), c2.code.c_str()) > 0) ? true : false;
     });
 
-    Timeslot timetable[7][108];
+    Solution solution {courses};
+    solution.initializeSchedule();
 
+//    Timeslot timetable[7][108];
+
+    /*
     for (auto & course : courses) {
         for (const auto & classroom : classrooms) {
             course.classrooms.push_back(classroom);
         }
     }
+     */
 
     /*
     std::cout << courses.at(0).code << " " << courses.at(0).studentList.size() << std::endl;
@@ -49,12 +55,16 @@ int main(){
     */
 
     /*print conflicting courses of each course*/
+
     for(const Course& c : courses) {
         std::cout << "*Courses that conflict with " << c.code << "*" << std::endl;
         for (auto & conflictingCourse : c.conflictingCourses) {
-            std::cout << conflictingCourse << std::endl;
+            //std::cout << conflictingCourse << std::endl;
         }
     }
+
+
+
 
     return 0;
 }
@@ -76,6 +86,7 @@ std::vector<Course> loadCourses(const char*path) {
         courses.emplace_back(row.at(professorColumn), row.at(codeColumn),
 std::stoi(row.at(durationColumn)), studentCount);
     }
+
 
     for (auto&course: courses) {
         Vector2<String> rows = courseList.filter(codeColumn, course.code);
@@ -109,7 +120,7 @@ std::stoi(row.at(durationColumn)), studentCount);
                             if(!skip && courses.at(i).code != courses.at(j).code){
                                 courses.at(i).conflictingCourses.push_back(courses.at(j).code);
                                 courses.at(j).conflictingCourses.push_back(courses.at(i).code);
-                                std::cout << courses.at(i).code << " conflicts with " << courses.at(j).code << std::endl;
+                                //std::cout << courses.at(i).code << " conflicts with " << courses.at(j).code << std::endl;
                             }
                         }
                     }
