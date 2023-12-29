@@ -22,22 +22,22 @@
 #define codeColumn 2
 #define durationColumn 3
 
-std::vector<Course> loadCourses(const char*path);
+std::vector<Course> loadCourses(const char* path);
 
-std::vector<Classroom> loadClassrooms(const char*path);
+std::vector<Classroom> loadClassrooms(const char* path);
 
-int main(){
+int main() {
     std::vector<Classroom> classrooms = loadClassrooms(RESOURCES_PATH "classroom.csv");
     std::vector<Course> courses = loadCourses(RESOURCES_PATH "t1.csv");
 
-    std::sort(courses.begin(), courses.end(), [](const Course& c1, const Course& c2) {
+    std::sort(courses.begin(), courses.end(), [](const Course&c1, const Course&c2) {
         return (strcmp(c1.code.c_str(), c2.code.c_str()) > 0) ? true : false;
     });
 
-    Solution solution {courses};
+    Solution solution{courses};
     solution.initializeSchedule();
 
-//    Timeslot timetable[7][108];
+    //    Timeslot timetable[7][108];
 
     /*
     for (auto & course : courses) {
@@ -56,41 +56,41 @@ int main(){
 
     /*print conflicting courses of each course*/
 
+    /*
     for(const Course& c : courses) {
         std::cout << "*Courses that conflict with " << c.code << "*" << std::endl;
         for (auto & conflictingCourse : c.conflictingCourses) {
             //std::cout << conflictingCourse << std::endl;
         }
     }
-
-
+    */
 
 
     return 0;
 }
 
-std::vector<Course> loadCourses(const char*path) {
+std::vector<Course> loadCourses(const char* path) {
     const CSV courseList{path};
     std::vector<Course> courses;
-    const Vector2<String> uniqueCourses = courseList.filter(codeColumn, [](const std::string& value) {
+    const Vector2<String> uniqueCourses = courseList.filter(codeColumn, [](const std::string&value) {
         static std::unordered_map<String, bool> seen;
         if (seen.find(value) == seen.end()) {
-            seen.emplace(value,true);
+            seen.emplace(value, true);
             return true;
         }
         return false;
     });
 
-    for (std::vector<String>row : uniqueCourses) {
+    for (std::vector<String> row: uniqueCourses) {
         const unsigned long studentCount = courseList.filter(codeColumn, row.at(codeColumn)).size();
         courses.emplace_back(row.at(professorColumn), row.at(codeColumn),
-std::stoi(row.at(durationColumn)), studentCount);
+                             std::stoi(row.at(durationColumn)), studentCount);
     }
 
 
     for (auto&course: courses) {
         Vector2<String> rows = courseList.filter(codeColumn, course.code);
-        for (std::vector<String> row : rows) {
+        for (std::vector<String> row: rows) {
             int s = std::stoi(row.at(idColumn));
             course.studentList.push_back(s);
         }
@@ -107,7 +107,6 @@ std::stoi(row.at(durationColumn)), studentCount);
                 for (int k = 0; !skip && k < L1S; k++) {
                     for (int l = 0; !skip && l < L2S; l++) {
                         if (courses.at(i).studentList.at(k) == courses.at(j).studentList.at(l)) {
-
                             const unsigned long L1C = courses.at(j).conflictingCourses.size();
                             for (int o = 0; o < L1C; ++o) {
                                 if (courses.at(j).conflictingCourses.at(o) == courses.at(i).code) {
@@ -115,9 +114,8 @@ std::stoi(row.at(durationColumn)), studentCount);
                                     skip = true;
                                     break;
                                 }
-
                             }
-                            if(!skip && courses.at(i).code != courses.at(j).code){
+                            if (!skip && courses.at(i).code != courses.at(j).code) {
                                 courses.at(i).conflictingCourses.push_back(courses.at(j).code);
                                 courses.at(j).conflictingCourses.push_back(courses.at(i).code);
                                 //std::cout << courses.at(i).code << " conflicts with " << courses.at(j).code << std::endl;
@@ -133,10 +131,10 @@ std::stoi(row.at(durationColumn)), studentCount);
     return courses;
 }
 
-std::vector<Classroom> loadClassrooms(const char*path) {
+std::vector<Classroom> loadClassrooms(const char* path) {
     CSV classroomList{path};
     std::vector<Classroom> classrooms;
-    for (std::vector<String> row : classroomList.getData()) {
+    for (std::vector<String> row: classroomList.getData()) {
         classrooms.emplace_back(std::stoi(row.at(capacityColumn)), row.at(idColumn));
     }
 

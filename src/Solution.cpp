@@ -35,7 +35,8 @@ void Solution::Solve() {
                     oldScore = newScore;
                 }
                 //accept good moves always
-            } else {
+            }
+            else {
                 //Schedule = newSchedule;
                 oldScore = newScore;
             }
@@ -49,53 +50,62 @@ void Solution::Solve() {
 
 // make a small change in schedule
 void Solution::randomizedSuccesor() {
-
 }
 
 // make first schedule according to a logic
 void Solution::initializeSchedule() {
-    int dayCount = 5;
-    int i, day, start = 0;
-    bool contiguous = false;
-    for(auto & course : courseList){
-        bool placed = false;
-        int timePartition = course.examDuration / TIMESLOTDURATION;
-        //std::cout << course.code << " " << timePartition <<  std::endl;
-
-        for(day = 0; !placed && day < dayCount; ++day){
-            for(i = 0; !placed && i < TIMESLOTCOUNT; ++i) {
-                contiguous = false;
-                if(timeTable[day][i].status == AVAILABLE){
-                    int timeLim = i + timePartition;
-                    for(int j = i; j < timeLim; ++j){
-                        if(timeTable[day][j].status != AVAILABLE){
-                            contiguous = true;
-                            break;
-                        }
-                    }
-                    if(!contiguous){
-                        //std::cout << ((contiguous) ? "true" : "false") << " " << i << std::endl;
-                        start = i;
-                        int timeDur = start + timePartition;
-                        for(i = start; i < timeDur; ++i){
-                            timeTable[day][i].status = OCCUPIED;
-                            timeTable[day][i].currentCourse = course;
-                        }
-                        placed = true;
+    // mark all courses as "not placed"
+    std::vector<bool> placed = std::vector<bool>(courseList.size());
+    for (int i = 0; i < placed.size(); i++) {
+        placed.at(i) = false;
+    }
+    // for each slot...
+    for (int day = 0; day < 7; day++) {
+        for (int slot = 0; slot < 108; slot++) {
+            // ... find a course to place contiguously
+            for (int c = 0; c < courseList.size(); c++) {
+                if (placed.at(c) == true) continue;
+                bool canFit = true;
+                // check if exam can fit ...
+                for (int i = 0; i < courseList.at(c).examDuration / TIMESLOTDURATION; ++i) {
+                    if (slot + i >= 108 || timeTable[day][slot + i].status != AVAILABLE) {
+                        canFit = false;
                         break;
+                    }
+                }
+                // ... if so, place it
+                if (canFit) {
+                    placed.at(c) = true;
+                    for (int i = 0; i < courseList.at(c).examDuration / TIMESLOTDURATION; ++i) {
+                        timeTable[day][slot + i].status = OCCUPIED;
+                        timeTable[day][slot + i].currentCourse = courseList.at(c);
+                    }
                 }
             }
         }
-        /*
-         * Implement going to 3rd dimension
-         * if current dimension's timetable is full
-         */
-
-
-        }
     }
 
-std::cout << "Finished";
+    // print schedule (WIP)
+    // TODO: merge contiguous slots
+    for (int i = 0; i < 108; i++)
+        printf("%02d:%02d %10s %10s %10s %10s %10s %10s %10s\n",
+               9 + (i * TIMESLOTDURATION) / 60, (i * TIMESLOTDURATION) % 60,
+               timeTable[0][i].currentCourse.code.c_str(),
+               timeTable[1][i].currentCourse.code.c_str(),
+               timeTable[2][i].currentCourse.code.c_str(),
+               timeTable[3][i].currentCourse.code.c_str(),
+               timeTable[4][i].currentCourse.code.c_str(),
+               timeTable[5][i].currentCourse.code.c_str(),
+               timeTable[6][i].currentCourse.code.c_str()
+        );
+
+    int placedCount = 0;
+    for (int i = 0; i < placed.size(); i++) {
+        if (placed.at(i)) placedCount++;
+    }
+    std::cout << "Placed course count: " << placedCount << std::endl;
+
+    std::cout << "Finished";
 }
 
 // calculate cost
@@ -105,6 +115,6 @@ int Solution::cost() {
 
 // for annealing process
 double Solution::cooling() {
-    return tempmax*alpha;
+    return tempmax * alpha;
 }
 
