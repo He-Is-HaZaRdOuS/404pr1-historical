@@ -12,11 +12,16 @@ inline bool day7 = false;
 
 #define K 0.9
 
+typedef struct Week {
+    Timeslot t[7][TIMESLOTCOUNT];
+} Week;
+
 using namespace std;
 
 class Solution{
 public:
-    Timeslot timeTable [7][TIMESLOTCOUNT];
+    std::vector<Week> timeTable;
+    //Timeslot timeTable [7][TIMESLOTCOUNT];
     double tempmax = 1;
     double tempmin = 0.001;
     double alpha = 0.99998;

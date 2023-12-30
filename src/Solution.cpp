@@ -5,6 +5,8 @@
 // constructor
 Solution::Solution(vector<Course> list) {
     this->courseList = list;
+    /* hold one dimension initially */
+    this->timeTable.push_back(Week{});
 }
 
 // pseudocode of simulated annealing
@@ -55,20 +57,22 @@ void Solution::randomizedSuccesor() {
 // make first schedule according to a logic
 void Solution::initializeSchedule() {
     // mark all courses as "not placed"
-    std::vector<bool> placed = std::vector<bool>(courseList.size());
-    for (int i = 0; i < placed.size(); i++) {
+    const unsigned long courseCount = courseList.size();
+    std::vector<bool> placed = std::vector<bool>(courseCount);
+    for (int i = 0; i < courseCount; i++) {
         placed.at(i) = false;
     }
     // for each slot...
     for (int day = 0; day < 7; day++) {
-        for (int slot = 0; slot < 108; slot++) {
+        for (int slot = 0; slot < TIMESLOTCOUNT; ++slot) {
             // ... find a course to place contiguously
-            for (int c = 0; c < courseList.size(); c++) {
+            for (int c = 0; c < courseCount; ++c) {
                 if (placed.at(c) == true) continue;
+                const unsigned long courseTimePartition = courseList.at(c).examDuration / TIMESLOTDURATION;
                 bool canFit = true;
                 // check if exam can fit ...
-                for (int i = 0; i < courseList.at(c).examDuration / TIMESLOTDURATION; ++i) {
-                    if (slot + i >= 108 || timeTable[day][slot + i].status != AVAILABLE) {
+                for (int i = 0; i < courseTimePartition; ++i) {
+                    if (slot + i >= TIMESLOTCOUNT || timeTable.at(0).t[day][slot + i].status != AVAILABLE) {
                         canFit = false;
                         break;
                     }
@@ -76,9 +80,11 @@ void Solution::initializeSchedule() {
                 // ... if so, place it
                 if (canFit) {
                     placed.at(c) = true;
-                    for (int i = 0; i < courseList.at(c).examDuration / TIMESLOTDURATION; ++i) {
-                        timeTable[day][slot + i].status = OCCUPIED;
-                        timeTable[day][slot + i].currentCourse = courseList.at(c);
+                    for (int i = 0; i < courseTimePartition; ++i) {
+                        timeTable.at(0).t[day][slot+i].status = OCCUPIED;
+                        timeTable.at(0).t[day][slot+i].currentCourse = courseList.at(c);
+                        //timeTable[day][slot + i].status = OCCUPIED;
+                        //timeTable[day][slot + i].currentCourse = courseList.at(c);
                     }
                 }
             }
@@ -87,21 +93,21 @@ void Solution::initializeSchedule() {
 
     // print schedule (WIP)
     // TODO: merge contiguous slots
-    for (int i = 0; i < 108; i++)
+    for (int i = 0; i < TIMESLOTCOUNT; ++i)
         printf("%02d:%02d %10s %10s %10s %10s %10s %10s %10s\n",
                9 + (i * TIMESLOTDURATION) / 60, (i * TIMESLOTDURATION) % 60,
-               timeTable[0][i].currentCourse.code.c_str(),
-               timeTable[1][i].currentCourse.code.c_str(),
-               timeTable[2][i].currentCourse.code.c_str(),
-               timeTable[3][i].currentCourse.code.c_str(),
-               timeTable[4][i].currentCourse.code.c_str(),
-               timeTable[5][i].currentCourse.code.c_str(),
-               timeTable[6][i].currentCourse.code.c_str()
+               timeTable.at(0).t[0][i].currentCourse.code.c_str(),
+               timeTable.at(0).t[1][i].currentCourse.code.c_str(),
+               timeTable.at(0).t[2][i].currentCourse.code.c_str(),
+               timeTable.at(0).t[3][i].currentCourse.code.c_str(),
+               timeTable.at(0).t[4][i].currentCourse.code.c_str(),
+               timeTable.at(0).t[5][i].currentCourse.code.c_str(),
+               timeTable.at(0).t[6][i].currentCourse.code.c_str()
         );
 
     int placedCount = 0;
-    for (int i = 0; i < placed.size(); i++) {
-        if (placed.at(i)) placedCount++;
+    for (int i = 0; i < courseCount; ++i) {
+        if (placed.at(i)) ++placedCount;
     }
     std::cout << "Placed course count: " << placedCount << std::endl;
 

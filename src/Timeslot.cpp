@@ -3,6 +3,4 @@
 Timeslot::Timeslot(): currentCourse("---","---",0,0), status(AVAILABLE) {
 }
 
-Timeslot::~Timeslot() {
-
-}
+Timeslot::~Timeslot() = default;
