@@ -5,6 +5,7 @@
 #define TIMESLOTCOUNT 108
 #define TIMESLOTDURATION 5
 inline bool day7 = false;
+inline unsigned int dimensionCount = 1;
 
 #include "Course.h"
 #include "Timeslot.h"
@@ -30,12 +31,13 @@ public:
     vector<Classroom> classList;
     vector<Course> courseList;
 
+    inline std::vector<Classroom> getAvailableClassrooms(int day, int start, int end);
     void randomizedSuccesor();
     void initializeSchedule();
     double cooling();
     int cost();
 
-    explicit Solution(vector<Course> list);
+    explicit Solution(vector<Course> list, vector<Classroom> classrooms);
     void Solve();
 };
 

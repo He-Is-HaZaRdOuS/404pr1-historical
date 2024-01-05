@@ -7,6 +7,7 @@
 class Classroom {
 public:
     explicit Classroom(int capacity, String id);
+    Classroom();
     ~Classroom();
     int capacity;
     String id;

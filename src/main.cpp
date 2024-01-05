@@ -29,13 +29,50 @@ std::vector<Classroom> loadClassrooms(const char* path);
 int main() {
     std::vector<Classroom> classrooms = loadClassrooms(RESOURCES_PATH "classroom.csv");
     std::vector<Course> courses = loadCourses(RESOURCES_PATH "t1.csv");
+    std::vector<Course> coursesS = loadCourses(RESOURCES_PATH "course-list3.csv");
+
+    unsigned int cs = coursesS.size();
+    for(int i = 0; i < cs; ++i) {
+        if(coursesS.at(i).code.at(0) == 'S') {
+            courses.push_back(coursesS.at(i));
+        }
+    }
+
+/*
+    unsigned int cc = coursesC.size();
+    unsigned int cs = coursesS.size();
+    for(int i=0; i < cc; i++) {
+        for(int j=0; j < cs; j++) {
+            Course n;
+            if(coursesC.at(i).code != coursesS.at(j).code) {
+                n = coursesC.at(i);
+                bool exists = false;
+                for(int k=0; k < courses.size(); k++) {
+                    if(n.code == courses.at(k).code)
+                        exists = true;
+                }
+                if(!exists) {
+                    courses.push_back(n);
+                }
+            }
+        }
+    }
+    */
 
     std::sort(courses.begin(), courses.end(), [](const Course&c1, const Course&c2) {
         return (strcmp(c1.code.c_str(), c2.code.c_str()) > 0) ? true : false;
     });
 
-    Solution solution{courses};
+    for(Course& c : courses) {
+        std::cout << c.code << std::endl;
+    }
+
+
+
+    Solution solution{courses, classrooms};
     solution.initializeSchedule();
+
+
 
     //    Timeslot timetable[7][108];
 

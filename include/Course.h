@@ -9,6 +9,7 @@
 class Course {
 public:
     explicit Course(String professorName, String code, int examDuration, int studentCount = 0);
+    Course();
     ~Course();
     int studentCount;
     int examDuration;
