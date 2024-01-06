@@ -24,49 +24,49 @@ void Solution::checkValidity() {
 
 // constructor
 Solution::Solution(vector<Course> list, vector<Classroom> classrooms) {
-  this->courseList = list;
-  this->classList = classrooms;
+    this->courseList = list;
+    this->classList = classrooms;
 }
 
 // pseudocode of simulated annealing
 void Solution::Solve() {
-  int newScore;
-  int oldScore;
-  int delta;
+    int newScore;
+    int oldScore;
+    int delta;
 
-  //fill the sudoku table random
-  initializeSchedule();
-  oldScore = cost();
+    //fill the sudoku table random
+    initializeSchedule();
+    oldScore = cost();
 
-  while (tempmax > tempmin) {
-    for (int i = 0; i < iterationTimes; i++) {
-      if (oldScore == 0) {
-        tempmax = tempmin;
-        break;
-      }
+    while (tempmax > tempmin) {
+        for (int i = 0; i < iterationTimes; i++) {
+            if (oldScore == 0) {
+                tempmax = tempmin;
+                break;
+            }
 
-      //get new sudoku board according to a logic
-      //newSchedule = randomizeSuccesor(board);
-      //newScore = cost(newboard);
-      delta = newScore - oldScore;
-      if (delta > 0) {
-        //probability of accepting bad moves
-        if ((rand() % 1000) / 1000.0 < exp(-delta / (K * tempmax))) {
-          //Schedule = newSchedule;
-          oldScore = newScore;
+            //get new sudoku board according to a logic
+            //newSchedule = randomizeSuccesor(board);
+            //newScore = cost(newboard);
+            delta = newScore - oldScore;
+            if (delta > 0) {
+                //probability of accepting bad moves
+                if ((rand() % 1000) / 1000.0 < exp(-delta / (K * tempmax))) {
+                    //Schedule = newSchedule;
+                    oldScore = newScore;
+                }
+                //accept good moves always
+            }
+            else {
+                //Schedule = newSchedule;
+                oldScore = newScore;
+            }
+            //keep number of all iterations
+            count++;
         }
-        //accept good moves always
-      }
-      else {
-        //Schedule = newSchedule;
-        oldScore = newScore;
-      }
-      //keep number of all iterations
-      count++;
+        // decrase the temperature
+        tempmax = cooling();
     }
-    // decrase the temperature
-    tempmax = cooling();
-  }
 }
 
 // make a small change in schedule
@@ -223,39 +223,66 @@ void Solution::initializeSchedule() {
 
 // calculate cost
 int Solution::cost() {
+    int cost = 0;
+
+  for(int day = 0; day < 7; ++day) {
+    for(int i = 0; i < dimensionCount; ++i)
+      for(int j = 0; j < TIMESLOTCOUNT; ++j) {
+
+        if(timeTable.at(i).t[day][j].status == OCCUPIED)
+          for(int l = 0; l < dimensionCount; ++l)
+            for(int k = 0; k < TIMESLOTCOUNT; ++k) {
+
+              if(timeTable.at(i).t[day][j].currentCourse.code != timeTable.at(l).t[day][k].currentCourse.code
+                  && timeTable.at(l).t[day][k].status == OCCUPIED) {
+                if(timeTable.at(i).t[day][j].currentCourse.professorName
+                    == timeTable.at(l).t[day][k].currentCourse.professorName) {
+                  ++cost;
+                }
+                for(auto &a : timeTable.at(i).t[day][j].currentCourse.conflictingCourses) {
+                  if(a == timeTable.at(l).t[day][k].currentCourse.code)
+                    ++cost;
+                }
+              }
+            }
+      }
+  }
+
+  cout << "\ncost: " << cost << endl;
   return 0;
 }
 
 // for annealing process
 double Solution::cooling() {
-  return tempmax * alpha;
+    return tempmax * alpha;
 }
 
 /* return a vector of non-intersecting classrooms for the given time interval */
 inline std::vector<Classroom> Solution::getAvailableClassrooms(const int day, const int start, const int end) {
-  const unsigned int cSize = classList.size();
-  std::vector<Classroom> result;
-  std::unordered_map<String, bool> availableClassrooms;
-  for(Classroom& c : classList) {
-    availableClassrooms.emplace(c.id, true);
-  }
-
-  for(int dim = 0; dim < dimensionCount; ++dim) {
-    for(int i = start; i < end; ++i) {
-      if(timeTable.at(dim).t[day][i].status == OCCUPIED) {
-        availableClassrooms[timeTable.at(dim).t[day][i].currentCourse.code] = false;
-      }
+    const unsigned int cSize = classList.size();
+    std::vector<Classroom> result;
+    std::unordered_map<String, bool> availableClassrooms;
+    for(Classroom& c : classList) {
+        availableClassrooms.emplace(c.id, true);
     }
-  }
 
-  for (const pair<const string, bool>& available : availableClassrooms) {
-    if(available.second) {
-      for(int i = 0; i < cSize; ++i) {
-        if(classList.at(i).id == available.first) {
-          result.push_back(classList.at(i));
+    for(int dim = 0; dim < dimensionCount; ++dim) {
+        for(int i = start; i < end; ++i) {
+            if(timeTable.at(dim).t[day][i].status == OCCUPIED) {
+                availableClassrooms[timeTable.at(dim).t[day][i].currentCourse.code] = false;
+            }
         }
-      }
     }
-  }
-  return result;
+
+    for (const pair<const string, bool>& available : availableClassrooms) {
+        if(available.second) {
+            for(int i = 0; i < cSize; ++i) {
+                if(classList.at(i).id == available.first) {
+                    result.push_back(classList.at(i));
+                }
+            }
+        }
+    }
+    return result;
 }
+

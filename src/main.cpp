@@ -55,6 +55,7 @@ int main() {
 
   Solution solution{coursesCENG, classrooms};
   solution.initializeSchedule();
+  solution.cost();
 
 
 
