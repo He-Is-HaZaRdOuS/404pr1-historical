@@ -4,7 +4,7 @@
 
 #include "Course.h"
 
-typedef enum TimeSlotStatus {AVAILABLE,OCCUPIED} TimeSlotStatus;
+typedef enum TimeSlotStatus {AVAILABLE,OCCUPIED,BLOCKED} TimeSlotStatus;
 
 class Timeslot {
 public:
