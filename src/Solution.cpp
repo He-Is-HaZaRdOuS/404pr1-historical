@@ -191,7 +191,33 @@ void Solution::initializeSchedule() {
 
 // calculate cost
 int Solution::cost() {
-    return 0;
+    int cost = 0;
+
+  for(int day = 0; day < 7; ++day) {
+    for(int i = 0; i < dimensionCount; ++i)
+      for(int j = 0; j < TIMESLOTCOUNT; ++j) {
+
+        if(timeTable.at(i).t[day][j].status == OCCUPIED)
+          for(int l = 0; l < dimensionCount; ++l)
+            for(int k = 0; k < TIMESLOTCOUNT; ++k) {
+
+              if(timeTable.at(i).t[day][j].currentCourse.code != timeTable.at(l).t[day][k].currentCourse.code
+                  && timeTable.at(l).t[day][k].status == OCCUPIED) {
+                if(timeTable.at(i).t[day][j].currentCourse.professorName
+                    == timeTable.at(l).t[day][k].currentCourse.professorName) {
+                  ++cost;
+                }
+                for(auto &a : timeTable.at(i).t[day][j].currentCourse.conflictingCourses) {
+                  if(a == timeTable.at(l).t[day][k].currentCourse.code)
+                    ++cost;
+                }
+              }
+            }
+      }
+  }
+
+  cout << "\ncost: " << cost << endl;
+  return 0;
 }
 
 // for annealing process
