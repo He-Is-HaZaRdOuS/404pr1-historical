@@ -3,12 +3,9 @@
 #include <algorithm>
 #include <cmath>
 #include <cstring>
-#include <ctime>
 #include <iostream>
 #include <random>
 #include <unordered_map>
-
-int myrandom (int i) { return std::rand()%i;}
 
 // constructor
 Solution::Solution(vector<Course> list, vector<Classroom> classrooms) {
@@ -68,9 +65,14 @@ void Solution::initializeSchedule() {
   std::vector<bool> placed = std::vector<bool>(courseCount);
   bool isFilled = false;
 
+  TryAgain:
+
+  int iterationCount = 0;
   do {
       isFilled = fillTable(courseCount, placed);
       if(!isFilled) {
+        std::cout << iterationCount << std::endl;
+        ++iterationCount;
         dimensionCount = 1;
         timeTable.clear();
         for (int i = 0; i < courseCount; i++) {
@@ -81,8 +83,20 @@ void Solution::initializeSchedule() {
         std::shuffle(std::begin(courseList), std::end(courseList), rng);
         std::shuffle(std::begin(placed), std::end(placed), rng);
       }
-  }while(!isFilled);
+  }while(!isFilled && iterationCount < 10);
 
+  /* Unlock Day 7 and try again */
+  if(!__Day7Needed && !isFilled && iterationCount >= 10) {
+    __Day7Needed = true;
+    std::cout << "DAY 7 UNLOCKED!" << std::endl;
+    goto TryAgain;
+  }
+
+  /* FAILED */
+  if(__Day7Needed && !isFilled) {
+    std::cout << "COULDNT FILL TABLE AT ALL, TERMINATING!";
+    exit(1);
+  }
 
   /* TODO
      * Simulated Annealing may have to be done before assignment of classrooms xo
@@ -90,7 +104,7 @@ void Solution::initializeSchedule() {
 
   /* assign classrooms to exams */
   unsigned int classListSize = courseList.size();
-  for(int day = 0; day < 7; ++day){
+  for(int day = 0; day < (__Day7Needed ? 7 : 6); ++day){
     for(int slot = 0; slot < TIMESLOTCOUNT; ++slot){
       for(int dim = 0; dim < dimensionCount; ++dim) {
         for(int cSize = 0; cSize < classListSize; ++cSize) {
@@ -167,6 +181,10 @@ void Solution::initializeSchedule() {
     }
 
   }
+  std::cout << "Dimension # " << dimensionCount << std::endl;
+
+  std::cout << "Number of days: " << (__Day7Needed ? 7 : 6) << std::endl;
+
   std::cout << "Placed course count: " << placedCount << std::endl;
 
   std::cout << "Finished";
@@ -180,7 +198,7 @@ inline bool Solution::fillTable(const unsigned long courseCount, std::vector<boo
     if(timeTable.size() < dimensionCount)
       this->timeTable.push_back(Week{});
     bool currentDimensionIsEmpty = true;
-    for (int day = 0; day < 7; day++) {
+    for (int day = 0; day < (__Day7Needed ? 7 : 6); day++) {
       for (int slot = 0; slot < TIMESLOTCOUNT; ++slot) {
         // ... find a course to place contiguously
         for (int c = 0; c < courseCount; ++c) {
@@ -245,9 +263,8 @@ inline bool Solution::fillTable(const unsigned long courseCount, std::vector<boo
 }
 
 inline void Solution::checkValidity() {
-  const unsigned long courseCount = courseList.size();
   for (int dim = 0; dim < dimensionCount; ++dim) {
-    for (int day = 0; day < 7; day++) {
+    for (int day = 0; day < (__Day7Needed ? 7 : 6); day++) {
       for (int slot = 0; slot < TIMESLOTCOUNT; ++slot) {
         const unsigned long conflictSize = timeTable.at(dim).t[day][slot].currentCourse.conflictingCourses.size();
         for(int cSize = 0; cSize < conflictSize; ++cSize) {
@@ -266,7 +283,7 @@ inline void Solution::checkValidity() {
 int Solution::cost() {
     int cost = 0;
 
-  for(int day = 0; day < 7; ++day) {
+  for(int day = 0; day < (__Day7Needed ? 7 : 6); ++day) {
     for(int i = 0; i < dimensionCount; ++i)
       for(int j = 0; j < TIMESLOTCOUNT; ++j) {
 

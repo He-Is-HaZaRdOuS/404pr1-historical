@@ -5,12 +5,12 @@
 #include <Course.h>
 #include <unordered_map>
 #include <fstream>
+#include <cstring>
+#include <iostream>
 
 #include "CSV.h"
 #include "Solution.h"
 #include "Typedefs.h"
-
-#include <cstring>
 
 #define classroomColumnSize 2
 #define courseColumnSize 4
@@ -30,11 +30,28 @@ int main() {
   std::vector<Classroom> classrooms = loadClassrooms(RESOURCES_PATH "classroom.csv");
   std::vector<Course> coursesCENG = loadCourses(RESOURCES_PATH "t1.csv");
   std::vector<Course> coursesSENG = loadCourses(RESOURCES_PATH "course-list3.csv");
+  std::vector<Course> coursesUE = loadCourses(RESOURCES_PATH "course-list4.csv");
+  std::vector<Course> coursesEENG = loadCourses(RESOURCES_PATH "course-list5.csv");
 
   unsigned int cs = coursesSENG.size();
   for(int i = 0; i < cs; ++i) {
     if(coursesSENG.at(i).code.at(0) == 'S') {
       coursesCENG.push_back(coursesSENG.at(i));
+    }
+  }
+
+  unsigned int cu = coursesUE.size();
+  for(int i = 0; i < cu; ++i) {
+    if(coursesUE.at(i).code.at(0) == 'U') {
+      coursesCENG.push_back(coursesUE.at(i));
+    }
+  }
+
+
+  unsigned int ce = coursesEENG.size();
+  for(int i = 0; i < ce; ++i) {
+    if(coursesEENG.at(i).code.at(0) == 'E') {
+      coursesCENG.push_back(coursesEENG.at(i));
     }
   }
 
@@ -45,7 +62,7 @@ int main() {
   });
 
 
-  /*
+/*
   for(Course& c : coursesCENG) {
       std::cout << c.code << std::endl;
   }

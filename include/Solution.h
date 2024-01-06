@@ -4,7 +4,7 @@
 
 #define TIMESLOTCOUNT 108
 #define TIMESLOTDURATION 5
-inline bool day7 = false;
+inline bool __Day7Needed = false;
 inline unsigned int dimensionCount = 1;
 
 #include "Course.h"
