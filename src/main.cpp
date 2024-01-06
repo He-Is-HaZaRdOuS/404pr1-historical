@@ -3,16 +3,14 @@
 #include <algorithm>
 #include <Classroom.h>
 #include <Course.h>
-#include <cstring>
-#include <iostream>
 #include <unordered_map>
-#include <iostream>
 #include <fstream>
 
 #include "CSV.h"
-#include "Timeslot.h"
-#include "Typedefs.h"
 #include "Solution.h"
+#include "Typedefs.h"
+
+#include <cstring>
 
 #define classroomColumnSize 2
 #define courseColumnSize 4
@@ -30,7 +28,7 @@ std::vector<Course> findConflictingCourses(std::vector<Course> courseList);
 
 int main() {
   std::vector<Classroom> classrooms = loadClassrooms(RESOURCES_PATH "classroom.csv");
-  std::vector<Course> coursesCENG = loadCourses(RESOURCES_PATH "course-list1.csv");
+  std::vector<Course> coursesCENG = loadCourses(RESOURCES_PATH "t1.csv");
   std::vector<Course> coursesSENG = loadCourses(RESOURCES_PATH "course-list3.csv");
 
   unsigned int cs = coursesSENG.size();
@@ -45,6 +43,7 @@ int main() {
   std::sort(coursesCENG.begin(), coursesCENG.end(), [](const Course&c1, const Course&c2) {
     return (strcmp(c1.code.c_str(), c2.code.c_str()) > 0) ? true : false;
   });
+
 
   /*
   for(Course& c : coursesCENG) {

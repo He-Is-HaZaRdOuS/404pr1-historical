@@ -11,6 +11,7 @@ inline unsigned int dimensionCount = 1;
 #include "Timeslot.h"
 #include "Classroom.h"
 
+
 #define K 0.9
 
 typedef struct Week {
@@ -31,12 +32,13 @@ public:
   vector<Classroom> classList;
   vector<Course> courseList;
 
-  void checkValidity();
-  inline std::vector<Classroom> getAvailableClassrooms(int day, int start, int end);
   void randomizedSuccesor();
   void initializeSchedule();
   double cooling();
   int cost();
+  inline bool fillTable(const unsigned long courseCount, std::vector<bool> &placed);
+  inline void checkValidity();
+  inline std::vector<Classroom> getAvailableClassrooms(int day, int start, int end);
 
   explicit Solution(vector<Course> list, vector<Classroom> classrooms);
   void Solve();
