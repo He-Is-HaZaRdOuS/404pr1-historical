@@ -7,6 +7,8 @@
 #include <random>
 #include <unordered_map>
 
+inline void printTimeTable(const std::vector<Week>&timeTable);
+
 // constructor
 Solution::Solution(vector<Course> list, vector<Classroom> classrooms) {
     this->courseList = list;
@@ -170,6 +172,8 @@ void Solution::initializeSchedule() {
              timeTable.at(d).t[6][i].currentCourse.code.c_str()
       );
   }
+
+  printTimeTable(timeTable);
 
   int placedCount = 0;
   for (int i = 0; i < courseCount; ++i) {
@@ -343,3 +347,65 @@ inline std::vector<Classroom> Solution::getAvailableClassrooms(const int day, co
     return result;
 }
 
+inline void printTimeTable(const std::vector<Week>&timeTable) {
+  const std::vector days = {
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+    "Sunday",
+  };
+  constexpr int dayOffset = 100000;
+
+  std::vector<std::pair<int,std::string>> exams;
+
+  for (int dim = 0; dim < dimensionCount; dim++) {
+    for (int day = 0; day < 7; day++) {
+      for (int t = 0; t < TIMESLOTCOUNT; t++) {
+        if (timeTable.at(dim).t[day][t].status == OCCUPIED) {
+          const int begin = t * TIMESLOTDURATION;
+          const int end = begin + timeTable.at(dim).t[day][t].currentCourse.examDuration;
+          t += timeTable.at(dim).t[day][t].currentCourse.examDuration / TIMESLOTDURATION - 1;
+          const std::vector<Classroom>& classrooms = timeTable.at(dim).t[day][t].currentCourse.classrooms;
+          char buf[512] = {0};
+          std::string info;
+          sprintf(buf, "%02d:%02d %s - ", 9 + begin / 60, begin % 60,
+                  begin / 60 >= 3 ? "PM" : "AM");
+          info += buf;
+          sprintf(buf, "%02d:%02d %s: ", 9 + end / 60, end % 60,
+                  end / 60 >= 3 ? "PM" : "AM");
+          info += buf;
+          sprintf(buf, "%-7s - ",
+                  timeTable.at(dim).t[day][t].currentCourse.code.c_str());
+          info += buf;
+          sprintf(buf, "%-5s: ", classrooms.size() > 1 ? "Rooms" : "Room");
+          info += buf;
+          for (const auto &classroom : classrooms) {
+            sprintf(buf, "%s ", classroom.id.c_str());
+            info += buf;
+          }
+          info.shrink_to_fit();
+          exams.emplace_back(day*dayOffset+t,info);
+        }
+      }
+    }
+  }
+
+  std::sort(exams.begin(), exams.end(), [](const auto& exam1, const auto& exam2) {
+      if (exam1.first < exam2.first) return true;
+    return false;
+  });
+
+  int day = -1;
+  for (const auto &[when, info] : exams) {
+    if (when / dayOffset > day) {
+      day = when / dayOffset;
+      std::cout << "\n" << days[day] << "\n\n";
+    }
+    std::cout << info << std::endl;
+  }
+
+  std::cout << "\nBlocked Hours:\n   (missing feature)\n\n" << std::endl;
+}
