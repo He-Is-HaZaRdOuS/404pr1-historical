@@ -71,6 +71,7 @@ int main() {
 
     Solution solution{courses, classrooms};
     solution.initializeSchedule();
+    solution.cost();
 
 
 
