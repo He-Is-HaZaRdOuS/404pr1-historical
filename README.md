@@ -42,7 +42,7 @@ the executable will be generated inside the /build folder. </br>
 ### (Windows)
 open a terminal and cd into the project folder </br>
 * cmake -S . -B build -G "MinGW Makefiles" </br>
-* cd /build </br>
+* cd build </br>
 * make </br>
 </br>
 the executable will be generated inside the /build folder. </br>
