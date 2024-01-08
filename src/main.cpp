@@ -71,7 +71,7 @@ int main() {
 
   Solution solution{coursesCENG, classrooms};
   solution.initializeSchedule();
-  solution.cost();
+  solution.cost(solution.timeTable);
 
 
 

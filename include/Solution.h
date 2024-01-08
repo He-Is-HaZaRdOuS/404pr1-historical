@@ -35,7 +35,7 @@ public:
   void randomizedSuccesor();
   void initializeSchedule();
   double cooling();
-  int cost();
+  int cost(vector<Week> table);
   inline bool fillTable(const unsigned long courseCount, std::vector<bool> &placed);
   inline void checkValidity();
   inline std::vector<Classroom> getAvailableClassrooms(int day, int start, int end);

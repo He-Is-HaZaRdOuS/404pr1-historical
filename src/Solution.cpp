@@ -23,7 +23,7 @@ void Solution::Solve() {
 
     //fill the sudoku table random
     initializeSchedule();
-    oldScore = cost();
+    oldScore = cost(timeTable);
 
     while (tempmax > tempmin) {
         for (int i = 0; i < iterationTimes; i++) {
@@ -288,26 +288,34 @@ inline void Solution::checkValidity() {
 }
 
 // calculate cost
-int Solution::cost() {
+int Solution::cost(vector<Week> table) {
     int cost = 0;
 
   for(int day = 0; day < (__Day7Needed ? 7 : 6); ++day) {
     for(int i = 0; i < __DimensionCount; ++i)
       for(int j = 0; j < TIMESLOTCOUNT; ++j) {
 
-        if(timeTable.at(i).t[day][j].status == OCCUPIED)
+        if(table.at(i).t[day][j].status == OCCUPIED)
           for(int l = 0; l < __DimensionCount; ++l)
             for(int k = 0; k < TIMESLOTCOUNT; ++k) {
 
-              if(timeTable.at(l).t[day][k].status == OCCUPIED && timeTable.at(i).t[day][j].currentCourse.code != timeTable.at(l).t[day][k].currentCourse.code) {
-                if(timeTable.at(i).t[day][j].currentCourse.professorName
-                    == timeTable.at(l).t[day][k].currentCourse.professorName) {
+              if(table.at(l).t[day][k].status == OCCUPIED && table.at(i).t[day][j].currentCourse.code != table.at(l).t[day][k].currentCourse.code) {
+
+//                check for same instructor
+                if(table.at(i).t[day][j].currentCourse.professorName
+                    == table.at(l).t[day][k].currentCourse.professorName) {
                   ++cost;
                 }
-                for(auto &a : timeTable.at(i).t[day][j].currentCourse.conflictingCourses) {
-                  if(a == timeTable.at(l).t[day][k].currentCourse.code)
+
+//                check for same students
+                for(auto &a : table.at(i).t[day][j].currentCourse.conflictingCourses) {
+                  if(a == table.at(l).t[day][k].currentCourse.code)
                     ++cost;
                 }
+
+//                check for same class years (CENG101 - CENG102)
+                if(table.at(i).t[day][j].currentCourse.code.at(4) == table.at(l).t[day][k].currentCourse.code.at(4))
+                  ++cost;
               }
             }
       }
