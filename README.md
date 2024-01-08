@@ -22,11 +22,30 @@ Execute the following commands line by line </br>
 * cmake --version (expected output is "cmake version 3.28.1") </br>
 </br>
 
+## Installing MinGW (gcc for Windows)
+* Download and install the gcc compiler for Windows from the following link. </br>
+* https://nuwen.net/files/mingw/mingw-18.0-without-git.exe </br>
+* Extract to somewhere temporary and then move it inside the "C:\Program Files" directory. </br>
+* Then update the System Environment Path Variables to point to the /bin directory of MinGW </br>
+* Open a terminal and type "gcc --version" to verify the compiler is detected. </br>
+</br>
+
 ## Compilation
-* open a terminal and cd into the project folder </br>
+### (Linux  && MacOS)
+open a terminal and cd into the project folder </br>
 * cmake -B build -S . </br>
 * cmake --build build </br>
-* the executable will be generated inside the /build folder </br>
+</br>
+the executable will be generated inside the /build folder. </br>
+</br>
+
+### (Windows)
+open a terminal and cd into the project folder </br>
+* cmake -S . -B build -G "MinGW Makefiles" </br>
+* cd /build </br>
+* make </br>
+</br>
+the executable will be generated inside the /build folder. </br>
 </br>
 
 ## Running
@@ -34,7 +53,7 @@ Execute the following commands line by line </br>
 * Consquently, the generated executable is hard linked to the resource path of the project's current directory and thus, is not portable. </br>
 * The solution for this is to open the CMakeLists.txt file and comment line 11 and uncomment line 12. </br>
 * This effectively changes the resource path to be relative to the current path of the executable, making it portable (Release Ready). </br>
-* Now re-compile the project by running "cmake --build build".
+* Now re-compile the project by running the build command from the previous section.
 * The only thing left to do is to copy the /res folder from the project root and paste it in the directory of the executable. </br>
 * To run the executable, open a terminal and type "./303pr1". </br>
 </br>
