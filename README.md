@@ -51,11 +51,20 @@ the executable will be generated inside the /build folder. </br>
 ## Running
 * The CMakeLists.txt is currently set up in such a way which is suitable for a development environment such as CLion or VisualStudio IDE's. </br>
 * Consquently, the generated executable is hard linked to the resource path of the project's current directory and thus, is not portable. </br>
-* The solution for this is to open the CMakeLists.txt file and comment line 11 and uncomment line 12. </br>
+* The solution for this is to open the CMakeLists.txt file and comment out line 11 and uncomment line 12. </br>
 * This effectively changes the resource path to be relative to the current path of the executable, making it portable (Release Ready). </br>
 * Now re-compile the project by running the build command from the previous section.
 * The only thing left to do is to copy the /res folder from the project root and paste it in the directory of the executable. </br>
 * To run the executable, open a terminal and type "./303pr1". </br>
+</br>
+
+## IDE's
+### CLion
+Open the project folder in CLion and configure the Debug and Release profiles </br>
+
+### Visual Studio
+Open the project folder in explorer, shift-right click and open with Visual Studio. </br>
+
 </br>
 
 ## Group Members
