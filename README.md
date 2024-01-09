@@ -87,6 +87,7 @@ the executable will be generated inside the respective build-X folder. </br>
 Open the project folder in CLion and configure the Debug and Release profiles. </br>
 
 ### Visual Studio (2022)
+Be sure to have installed the CMake build tools from the Visual installer. </br>
 Open the project folder in explorer, shift-right click and open with Visual Studio. </br>
 
 </br>
