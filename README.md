@@ -1,13 +1,18 @@
 # 303pr1
 * Placeholder repository for CENG303's Term project.
 
-## Installing CMake
-Windows && MacOS: </br>
+# Disclaimer!
+CMake does not recognize non-english characters in the build path. </br>
+If your computer's file structure contains any non-english characters then you won't be able to compile the program. </br>
+Please place the project folder somewhere such that the absolute path to it won't contain any non-english characters. </br>
+
+## Installing CMake (3.28.1)
+#### (Windows && MacOS) </br>
 Download the respective binaries from the following link and install them. </br>
 https://cmake.org/download/ </br>
 </br>
-Linux: </br>
-Execute the following commands line by line </br>
+#### (Linux) </br>
+Open a terminal window and execute the following commands line by line </br>
 * version=3.28 </br>
 * build=1 </br>
 * limit=3.20 </br>
@@ -27,25 +32,44 @@ Execute the following commands line by line </br>
 * https://nuwen.net/files/mingw/mingw-18.0-without-git.exe </br>
 * Extract to somewhere temporary and then move it inside the "C:\Program Files" directory. </br>
 * Then update the System Environment Path Variables to point to the /bin directory of MinGW </br>
-* Open a terminal and type "gcc --version" to verify the compiler is detected. </br>
+* Open a powershell window and type "gcc --version" to verify the compiler is detected. </br>
 </br>
 
 ## Compilation
 ### (Linux  && MacOS)
-open a terminal and cd into the project folder </br>
-* cmake -B build -S . </br>
-* cmake --build build </br>
+open a terminal window and cd into the project folder </br>
+#### (Release With Debug Info)
+* mkdir build-release </br>
+* cd build-release </br>
+* cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo .. </br>
+* cmake --build . </br>
+
+#### (Debug)
+* mkdir build-debug </br>
+* cd build-debug </br>
+* cmake -DCMAKE_BUILD_TYPE=Debug .. </br>
+* cmake --build . </br>
 </br>
-the executable will be generated inside the /build folder. </br>
+
+the executable will be generated inside the respective build-X folder. </br>
 </br>
 
 ### (Windows)
-open a terminal and cd into the project folder </br>
-* cmake -S . -B build -G "MinGW Makefiles" </br>
-* cd build </br>
+open a powershell window and cd into the project folder </br>
+#### (Release With Debug Info)
+* mkdir build-release </br>
+* cd build-release </br>
+* cmake -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=RelWithDebInfo .. </br>
+* make </br>
+
+#### (Debug)
+* mkdir build-debug </br>
+* cd build-debug </br>
+* cmake -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Debug .. </br>
 * make </br>
 </br>
-the executable will be generated inside the /build folder. </br>
+
+the executable will be generated inside the respective build-X folder. </br>
 </br>
 
 ## Running
@@ -53,16 +77,16 @@ the executable will be generated inside the /build folder. </br>
 * Consquently, the generated executable is hard linked to the resource path of the project's current directory and thus, is not portable. </br>
 * The solution for this is to open the CMakeLists.txt file and comment out line 11 and uncomment line 12. </br>
 * This effectively changes the resource path to be relative to the current path of the executable, making it portable (Release Ready). </br>
-* Now re-compile the project by running the build command from the previous section.
-* The only thing left to do is to copy the /res folder from the project root and paste it in the directory of the executable. </br>
-* To run the executable, open a terminal and type "./303pr1". </br>
+* Now re-compile the project by running the build command(s) from the previous section.
+* The only thing left to do is to copy the /res folder from the project root and paste it into the directory of the executable. </br>
+* To run the executable, open a terminal/powershell window and type "./303pr1". </br>
 </br>
 
 ## IDE's
-### CLion
-Open the project folder in CLion and configure the Debug and Release profiles </br>
+### CLion (Nova)
+Open the project folder in CLion and configure the Debug and Release profiles. </br>
 
-### Visual Studio
+### Visual Studio (2022)
 Open the project folder in explorer, shift-right click and open with Visual Studio. </br>
 
 </br>
