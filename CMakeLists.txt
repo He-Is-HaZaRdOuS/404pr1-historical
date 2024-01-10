@@ -1,5 +1,21 @@
 cmake_minimum_required(VERSION 3.27)
-project(303pr1)
+project(303pr1 VERSION 0.1.0)
+
+if(CMAKE_BUILD_TYPE MATCHES "Debug")
+    message("BUILDING DEBUG!")
+endif()
+
+if(CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo")
+    message("BUILDING RELEASE WITH DEBUG INFO!")
+endif()
+
+if(CMAKE_BUILD_TYPE MATCHES "MinSizeRel")
+    message("BUILDING MINIMUM SIZE RELEASE!")
+endif()
+
+if(CMAKE_BUILD_TYPE MATCHES "Release")
+    message("BUILDING RELEASE!")
+endif()
 
 set(CMAKE_CXX_STANDARD 17)
 

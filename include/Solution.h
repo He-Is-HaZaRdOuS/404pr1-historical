@@ -11,6 +11,8 @@ inline unsigned int __DimensionCount = 1;
 #include "Timeslot.h"
 #include "Classroom.h"
 
+#include <array>
+
 
 #define K 0.9
 
@@ -31,16 +33,18 @@ public:
   int count = 0;
   vector<Classroom> classList;
   vector<Course> courseList;
+  std::array<std::vector<std::string>, 7> blockedHours;
 
   void randomizedSuccesor();
   void initializeSchedule();
   double cooling();
   int cost(vector<Week> table);
-  inline bool fillTable(const unsigned long courseCount, std::vector<bool> &placed);
+  inline bool fillTable(unsigned long courseCount, std::vector<bool> &placed);
   inline void checkValidity();
+  void setBlockedHours(std::array<std::vector<std::string>, 7> blockedHours, int dim);
   inline std::vector<Classroom> getAvailableClassrooms(int day, int start, int end);
 
-  explicit Solution(vector<Course> list, vector<Classroom> classrooms);
+  explicit Solution(vector<Course> list, vector<Classroom> classrooms,   std::array<std::vector<std::string>, 7> blockedHours);
   void Solve();
 };
 

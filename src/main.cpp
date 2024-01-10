@@ -7,6 +7,7 @@
 #include <fstream>
 #include <cstring>
 #include <iostream>
+#include <array>
 
 #include "CSV.h"
 #include "Solution.h"
@@ -57,13 +58,13 @@ int main() {
 
   std::string days[] = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
 
-  std::vector<std::string> blockedHours[7];
+  std::array<std::vector<std::string>, 7> blockedHours;
 
   for (int i = 0; i < 7; ++i) {
     int iteration = 0;
 
     while (true) {
-      std::cout << "Enter blocked hours for (h1.m1-h2.m2) " << days[i] << " (enter '0' to skip): ";
+      std::cout << "Enter blocked hours for (h1:m1-h2:m2) " << days[i] << " (enter '0' to skip): ";
 
       std::string input;
       std::cin >> input;
@@ -72,14 +73,23 @@ int main() {
         break;
       }
 
-      int startHour = std::stoi(input.substr(0, 2));
-      int endHour = std::stoi(input.substr(6, 2));
+      int startHour;
+      int endHour;
+
+      try {
+        startHour = std::stoi(input.substr(0, 4));
+        endHour = std::stoi(input.substr(6, 4));
+      }
+      catch (...) {
+        //std::cout << std::endl;
+      }
+
 
       while (input.length() != 11 || startHour < 9 || endHour > 18 ||
-             input[2] != '.' || input[5] != '-' || input[8] != '.') {
-        std::cerr << "Invalid input format. Please enter in the format 09.00-18.00." << std::endl;
+             input[2] != ':' || input[5] != '-' || input[8] != ':') {
+        std::cerr << "Invalid input format. Please enter in the format 09:00-18:00." << std::endl;
 
-        std::cout << "Enter blocked hours for (h1.m1-h2.m2) " << days[i] << " (enter '0' to skip): ";
+        std::cout << "Enter blocked hours for (h1:m1-h2:m2) " << days[i] << " (enter '0' to skip): ";
         std::cin >> input;
         std::cout << std::endl;
         if (input == "0") {
@@ -101,6 +111,7 @@ int main() {
     }
   }
   for (int i = 0; i < 7; ++i) {
+    std::cout << days[i] << std::endl;
     for (int j = 0; j < blockedHours[i].size(); ++j) {
       std::cout<< blockedHours[i].at(j) <<std::endl;
     }
@@ -108,21 +119,21 @@ int main() {
   }
 
 
-      coursesCENG = findConflictingCourses(coursesCENG);
+  coursesCENG = findConflictingCourses(coursesCENG);
 
   std::sort(coursesCENG.begin(), coursesCENG.end(), [](const Course&c1, const Course&c2) {
     return (strcmp(c1.code.c_str(), c2.code.c_str()) > 0) ? true : false;
   });
 
 
-/*
-  for(Course& c : coursesCENG) {
-      std::cout << c.code << std::endl;
-  }
-*/
+  /*
+    for(Course& c : coursesCENG) {
+        std::cout << c.code << std::endl;
+    }
+  */
 
 
-  Solution solution{coursesCENG, classrooms};
+  Solution solution{coursesCENG, classrooms, blockedHours};
   solution.initializeSchedule();
   solution.cost(solution.timeTable);
 
@@ -156,6 +167,7 @@ int main() {
       }
   }
   */
+  std::cout << " ";
   return 0;
 }
 
