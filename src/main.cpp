@@ -55,7 +55,60 @@ int main() {
     }
   }
 
-  coursesCENG = findConflictingCourses(coursesCENG);
+  std::string days[] = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
+
+  std::vector<std::string> blockedHours[7];
+
+  for (int i = 0; i < 7; ++i) {
+    int iteration = 0;
+
+    while (true) {
+      std::cout << "Enter blocked hours for (h1.m1-h2.m2) " << days[i] << " (enter '0' to skip): ";
+
+      std::string input;
+      std::cin >> input;
+      std::cout << std::endl;
+      if (input == "0") {
+        break;
+      }
+
+      int startHour = std::stoi(input.substr(0, 2));
+      int endHour = std::stoi(input.substr(6, 2));
+
+      while (input.length() != 11 || startHour < 9 || endHour > 18 ||
+             input[2] != '.' || input[5] != '-' || input[8] != '.') {
+        std::cerr << "Invalid input format. Please enter in the format 09.00-18.00." << std::endl;
+
+        std::cout << "Enter blocked hours for (h1.m1-h2.m2) " << days[i] << " (enter '0' to skip): ";
+        std::cin >> input;
+        std::cout << std::endl;
+        if (input == "0") {
+          break;
+        }
+      }
+      blockedHours[i].push_back(input);
+
+      ++iteration;
+      if (iteration >= 2) {
+        std::cout << "Do you want to enter blocked hours again for " << days[i] << "? (1 for yes, 0 for no): ";
+        int repeat;
+        std::cin >> repeat;
+        std::cout << std::endl;
+        if (repeat == 0) {
+          break;
+        }
+      }
+    }
+  }
+  for (int i = 0; i < 7; ++i) {
+    for (int j = 0; j < blockedHours[i].size(); ++j) {
+      std::cout<< blockedHours[i].at(j) <<std::endl;
+    }
+
+  }
+
+
+      coursesCENG = findConflictingCourses(coursesCENG);
 
   std::sort(coursesCENG.begin(), coursesCENG.end(), [](const Course&c1, const Course&c2) {
     return (strcmp(c1.code.c_str(), c2.code.c_str()) > 0) ? true : false;
@@ -103,8 +156,6 @@ int main() {
       }
   }
   */
-
-
   return 0;
 }
 
