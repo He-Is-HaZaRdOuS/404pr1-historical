@@ -41,6 +41,7 @@ int main() {
   std::vector<Course> coursesSENG = loadCourses(RESOURCES_PATH "course-list3.csv");
   std::vector<Course> coursesUE = loadCourses(RESOURCES_PATH "course-list4.csv");
   std::vector<Course> coursesEENG = loadCourses(RESOURCES_PATH "course-list5.csv");
+  std::vector<Course> coursesDepartment = loadCourses(RESOURCES_PATH "course-list6.csv");
   Vector2D<std::string> blockedHours = loadBlockedHours(RESOURCES_PATH "blocked.csv");
 
   unsigned int cs = coursesSENG.size();
@@ -71,7 +72,8 @@ int main() {
     return (strcmp(c1.code.c_str(), c2.code.c_str()) > 0) ? true : false;
   });
 
-  Solution solution{coursesCENG, classrooms, blockedHours};
+  //Solution solution{coursesCENG, classrooms, blockedHours};
+  Solution solution{coursesDepartment, classrooms, blockedHours};
   solution.initializeSchedule();
   solution.cost(solution.timeTable);
 
