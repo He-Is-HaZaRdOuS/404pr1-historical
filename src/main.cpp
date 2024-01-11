@@ -37,38 +37,12 @@ std::vector<Course> findConflictingCourses(std::vector<Course> courseList);
 
 int main() {
   std::vector<Classroom> classrooms = loadClassrooms(RESOURCES_PATH "classroom.csv");
-  std::vector<Course> coursesCENG = loadCourses(RESOURCES_PATH "t1.csv");
-  std::vector<Course> coursesSENG = loadCourses(RESOURCES_PATH "course-list3.csv");
-  std::vector<Course> coursesUE = loadCourses(RESOURCES_PATH "course-list4.csv");
-  std::vector<Course> coursesEENG = loadCourses(RESOURCES_PATH "course-list5.csv");
   std::vector<Course> coursesDepartment = loadCourses(RESOURCES_PATH "course-list6.csv");
   Vector2D<std::string> blockedHours = loadBlockedHours(RESOURCES_PATH "blocked.csv");
 
-  unsigned int cs = coursesSENG.size();
-  for(int i = 0; i < cs; ++i) {
-    if(coursesSENG.at(i).code.at(0) == 'S') {
-      coursesCENG.push_back(coursesSENG.at(i));
-    }
-  }
+  coursesDepartment = findConflictingCourses(coursesDepartment);
 
-  unsigned int cu = coursesUE.size();
-  for(int i = 0; i < cu; ++i) {
-    if(coursesUE.at(i).code.at(0) == 'U') {
-      coursesCENG.push_back(coursesUE.at(i));
-    }
-  }
-
-
-  unsigned int ce = coursesEENG.size();
-  for(int i = 0; i < ce; ++i) {
-    if(coursesEENG.at(i).code.at(0) == 'E') {
-      coursesCENG.push_back(coursesEENG.at(i));
-    }
-  }
-
-  coursesCENG = findConflictingCourses(coursesCENG);
-
-  std::sort(coursesCENG.begin(), coursesCENG.end(), [](const Course&c1, const Course&c2) {
+  std::sort(coursesDepartment.begin(), coursesDepartment.end(), [](const Course&c1, const Course&c2) {
     return (strcmp(c1.code.c_str(), c2.code.c_str()) > 0) ? true : false;
   });
 
@@ -123,7 +97,7 @@ Vector2D<std::string> loadBlockedHours(const char* path) {
   });
 
   const unsigned long dayCount = blockedDays.size();
-  for(int i = 0; i <  dayCount; ++i) {
+  for(unsigned long i = 0; i <  dayCount; ++i) {
     //std::string t = blockedDays.at(i).at(blockedDays.at(i).size()-1);
     blockedDays.at(i).pop_back();
     blockedDays.at(i).pop_back();
@@ -144,7 +118,7 @@ Vector2D<std::string> loadBlockedHours(const char* path) {
   const unsigned long size = blockedDays.size();
   std::vector<bool> valid(size, true);
 
-  for(int i = 0; i < size; ++i) {
+  for(unsigned long i = 0; i < size; ++i) {
     transform(blockedDays.at(i).at(0).begin(), blockedDays.at(i).at(0).end(), blockedDays.at(i).at(0).begin(), static_cast<int (*)(int)>(&std::toupper));
     if (!(std::find(__DAYS.begin(), __DAYS.end(), blockedDays.at(i).at(0)) != __DAYS.end())){
       valid.at(i) = false;
@@ -152,7 +126,7 @@ Vector2D<std::string> loadBlockedHours(const char* path) {
   }
 
   bool shouldExit = false;
-  for(int i = 0; i < size; ++i){
+  for(unsigned long i = 0; i < size; ++i){
     if(!valid.at(i)){
       shouldExit = true;
       std::cerr << "Input error: " << copy.at(i).at(0) << " is not a day of the week" << std::endl;
@@ -169,7 +143,7 @@ Vector2D<std::string> loadBlockedHours(const char* path) {
   for(auto&day : blockedDays) {
     const unsigned long daySize = day.size();
     if(daySize > 3){
-      for(int i = 1; i < daySize; i=i+2){
+      for(unsigned long i = 1; i < daySize; i=i+2){
         std::string startTimeH1, endTimeH1, startTimeM1, endTimeM1;
         int startTimeSlot1, endTimeSlot1;
         try{
@@ -205,7 +179,7 @@ Vector2D<std::string> loadBlockedHours(const char* path) {
           exit(1);
         }
 
-        for(int j = i + 2; j < daySize; j=j+2){
+        for(unsigned long j = i + 2; j < daySize; j=j+2){
           if(i != j){
             std::string startTimeH2, endTimeH2, startTimeM2, endTimeM2;
             int  startTimeSlot2, endTimeSlot2;
@@ -291,8 +265,8 @@ Vector2D<std::string> loadBlockedHours(const char* path) {
   Vector2D<std::string> sortedBlockedDays;
 
   /* Sort days of the week starting from monday and fill in the missing days (if any)*/
-  for(int i = 0; i < 7; ++i){
-    for(int j = 0; j < dayCount; ++j){
+  for(unsigned long i = 0; i < 7; ++i){
+    for(unsigned long j = 0; j < dayCount; ++j){
       if(blockedDays.at(j).at(0) == __DAYS.at(i)){
         sortedBlockedDays.push_back(blockedDays.at(j));
         break;
@@ -336,17 +310,17 @@ std::vector<Classroom> loadClassrooms(const char* path) {
 
 std::vector<Course> findConflictingCourses(std::vector<Course> courseList) {
   const unsigned long courseSize = courseList.size();
-  for (int i = 0; i < courseSize; ++i) {
+  for (unsigned long i = 0; i < courseSize; ++i) {
     const unsigned long L1S = courseList.at(i).studentList.size();
-    for (int j = 0; j < courseSize; ++j) {
+    for (unsigned long j = 0; j < courseSize; ++j) {
       bool skip = false;
       const unsigned long L2S = courseList.at(j).studentList.size();
       if (i != j) {
-        for (int k = 0; !skip && k < L1S; k++) {
-          for (int l = 0; !skip && l < L2S; l++) {
+        for (unsigned long k = 0; !skip && k < L1S; k++) {
+          for (unsigned long l = 0; !skip && l < L2S; l++) {
             if (courseList.at(i).studentList.at(k) == courseList.at(j).studentList.at(l)) {
               const unsigned long L1C = courseList.at(j).conflictingCourses.size();
-              for (int o = 0; o < L1C; ++o) {
+              for (unsigned long o = 0; o < L1C; ++o) {
                 if (courseList.at(j).conflictingCourses.at(o) == courseList.at(i).code) {
                   //std::cout << courses.at(j).conflictingCourses.at(o) << " already conflicts with " << courses.at(i).code << std::endl;
                   skip = true;

@@ -48,7 +48,7 @@ CSV::CSV(const char* path, const char separator) {
 
 void CSV::printRows(const std::string&separator) const {
     for (auto&i: m_data) {
-        for (int j = 0; j < i.size(); ++j) {
+        for (unsigned long j = 0; j < i.size(); ++j) {
             std::cout << i.at(j);
             if (j != i.size() - 1)
                 std::cout << separator;
@@ -57,7 +57,7 @@ void CSV::printRows(const std::string&separator) const {
     }
 }
 
-Vector2D<std::string> CSV::filter(const int column, bool (*filter)(const std::string&)) const {
+Vector2D<std::string> CSV::filter(const long column, bool (*filter)(const std::string&)) const {
     auto matches = Vector2D<std::string>(0);
     if (column < 0 || column > m_cols) return matches;
     for (auto&row : m_data) {
