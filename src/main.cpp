@@ -176,7 +176,7 @@ Vector2D<std::string> loadBlockedHours(const char* path) {
           endTimeH1 = day.at(i).substr(6, 2);
           endTimeM1 = day.at(i).substr(9, 2);
 
-          if(startTimeH1.length() == 1 || startTimeM1.length() == 1 || endTimeH1.length() == 1 || endTimeM1.length() == 1){
+          if(startTimeH1.length() != 2 || startTimeM1.length() != 2 || endTimeH1.length() != 2 || endTimeM1.length() != 2){
             std::cerr << std::endl << "Formatting error in " << day.at(0) << " at " << day.at(i) << std::endl;
             std::cerr << "Time interval should be formatted as HH:MM-HH:MM" << std::endl;
             exit(1);
@@ -239,7 +239,7 @@ Vector2D<std::string> loadBlockedHours(const char* path) {
               std::cerr << std::endl << "Formatting error in: " << day.at(j) << std::endl;
               exit(1);
             }
-            if(endTimeSlot1 >= startTimeSlot2){
+            if(endTimeSlot1 >= startTimeSlot2 && startTimeSlot2 >= startTimeSlot1){
               std::cerr << std::endl << "Timing error in " << day.at(0) << "; Start time of an additional blocked interval must not intersect with End Time of previous intervals." << std::endl;
               exit(1);
             }
