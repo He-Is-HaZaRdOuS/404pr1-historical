@@ -13,18 +13,20 @@ https://cmake.org/download/ </br>
 </br>
 ### (Linux) </br>
 Open a terminal window and execute the following commands line by line </br>
-* version=3.28 </br>
-* build=1 </br>
-* limit=3.20 </br>
-* result=$(echo "$version >= $limit" | bc -l) </br>
-* os=$([ "$result" == 1 ] && echo "linux" || echo "Linux") </br>
-* mkdir ~/temp </br>
-* cd ~/temp </br>
-* wget https://cmake.org/files/v$version/cmake-$version.$build-$os-x86_64.sh  </br>
-* sudo mkdir /opt/cmake </br>
-* sudo sh cmake-$version.$build-$os-x86_64.sh --prefix=/opt/cmake  </br>
-(Type "y" to accept the license agreement and type "n" to forego installing inside the subdirectory) </br>
-* cmake --version (expected output is "cmake version 3.28.1") </br>
+
+```bash
+ version=3.28
+ build=1
+ limit=3.20
+ result=$(echo "$version >= $limit" | bc -l)
+ os=$([ "$result" == 1 ] && echo "linux" || echo "Linux")
+ mkdir ~/temp
+ cd ~/temp
+ wget https://cmake.org/files/v$version/cmake-$version.$build-$os-x86_64.sh
+ sudo mkdir /opt/cmake
+ sudo sh cmake-$version.$build-$os-x86_64.sh --prefix=/opt/cmake #(Type "y" to accept the license agreement and type "n" to forego installing inside the subdirectory)
+ cmake --version #(expected output is "cmake version 3.28.1") 
+```
 </br>
 
 ## Installing MinGW (gcc for Windows)
@@ -32,41 +34,86 @@ Open a terminal window and execute the following commands line by line </br>
 * https://nuwen.net/files/mingw/mingw-18.0-without-git.exe </br>
 * Extract to somewhere temporary and then move it inside the "C:\Program Files" directory. </br>
 * Then update the System Environment Path Variables to point to the /bin directory of MinGW </br>
-* Open a powershell window and type "gcc --version" to verify the compiler is detected. </br>
-</br>
+* Open a powershell window and type 
+```bash
+"gcc --version" 
+```
+* to verify the compiler is detected. </br>
 
 ## Compilation
 ### (Linux  && MacOS)
 open a terminal window and cd into the project folder </br>
-#### (Release With Debug Info)
-* mkdir build-release </br>
-* cd build-release </br>
-* cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo .. </br>
-* cmake --build . </br>
+
+#### (Release)
+```bash
+ mkdir build-release
+ cd build-release
+ cmake -DCMAKE_BUILD_TYPE=Release ..
+ cmake --build .
+```
 
 #### (Debug)
-* mkdir build-debug </br>
-* cd build-debug </br>
-* cmake -DCMAKE_BUILD_TYPE=Debug .. </br>
-* cmake --build . </br>
+```bash
+ mkdir build-debug
+ cd build-debug
+ cmake -DCMAKE_BUILD_TYPE=Debug ..
+ cmake --build .
+```
 
-### (Windows)
-open a powershell window and cd into the project folder </br>
 #### (Release With Debug Info)
-* mkdir build-release </br>
-* cd build-release </br>
-* cmake -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=RelWithDebInfo .. </br>
-* make </br>
+```bash
+ mkdir build-relwithdebinfo
+ cd build-relwithdebinfo
+ cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
+ cmake --build .
+```
 
-#### (Debug)
-* mkdir build-debug </br>
-* cd build-debug </br>
-* cmake -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Debug .. </br>
-* make </br>
+#### (Release With Minimum Size)
+```bash
+ mkdir build-minsizerel
+ cd build-minsizerel
+ cmake -DCMAKE_BUILD_TYPE=MinSizeRel ..
+ cmake --build .
+```
 </br>
 
 the executable will be generated inside the respective build-X folder. </br>
+
+### (Windows)
+open a powershell window and cd into the project folder </br>
+#### (Release)
+```bash
+ mkdir build-release
+ cd build-release
+ cmake -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release ..
+ make
+```
+
+#### (Debug)
+```bash
+ mkdir build-debug
+ cd build-debug
+ cmake -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Debug ..
+ make
+```
+#### (Release With Debug Info)
+```bash
+ mkdir build-relwithdebinfo
+ cd build-relwithdebinfo
+ cmake -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
+ make
+```
+
+#### (Release With Minimum Size)
+```bash
+ mkdir build-minsizerel
+ cd build-minsizerel
+ cmake -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=MinSizeRel ..
+ make
+```
 </br>
+
+the executable will be generated inside the respective build-X folder. </br>
 
 ## Running
 The CMakeLists.txt is currently set up in such a way which is suitable for a development environment such as CLion or VisualStudio IDE's. </br>
@@ -79,8 +126,8 @@ To run the executable, open a terminal/powershell window and type "./303pr1". </
 </br>
 
 ## IDE's
-#### CLion (Nova)
-Open the project folder in CLion and configure the Debug and Release profiles. </br>
+#### CLion (Stable/Nova)
+Open the project folder in CLion and configure CMake presets. </br>
 
 #### Visual Studio (2022)
 Be sure to have installed the CMake build tools from the Visual installer. </br>

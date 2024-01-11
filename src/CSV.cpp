@@ -1,7 +1,9 @@
 #include "CSV.h"
 
 #include <iostream>
-#include <Typedefs.h>
+#include <algorithm>
+
+#include "Typedefs.h"
 
 CSV::CSV(const char* path, const char separator) {
     FILE* fp = fopen(path, "r");
@@ -16,6 +18,7 @@ CSV::CSV(const char* path, const char separator) {
     m_data.emplace_back();
     while (fscanf(fp, "%c", &in) != EOF) {
         if (in == separator) {
+            transform(val.begin(), val.end(), val.begin(), static_cast<int (*)(int)>(&std::toupper));
             m_data.at(m_rows).push_back(val);
             val = "";
             col++;
@@ -54,8 +57,8 @@ void CSV::printRows(const std::string&separator) const {
     }
 }
 
-Vector2<String> CSV::filter(const int column, bool (*filter)(const std::string&)) const {
-    auto matches = Vector2<String>(0);
+Vector2D<std::string> CSV::filter(const int column, bool (*filter)(const std::string&)) const {
+    auto matches = Vector2D<std::string>(0);
     if (column < 0 || column > m_cols) return matches;
     for (auto&row : m_data) {
         if (filter(row.at(column))) {
@@ -66,8 +69,8 @@ Vector2<String> CSV::filter(const int column, bool (*filter)(const std::string&)
 }
 
 
-Vector2<String> CSV::filter(int column, std::string&value) const {
-    auto matches = Vector2<String>(0);
+Vector2D<std::string> CSV::filter(int column, std::string&value) const {
+    auto matches = Vector2D<std::string>(0);
     if (column < 0 || column > m_cols) return matches;
     for (auto&row : m_data) {
         if (row.at(column) == value) {
@@ -77,6 +80,6 @@ Vector2<String> CSV::filter(int column, std::string&value) const {
     return matches;
 }
 
-Vector2<String> CSV::getData() {
+Vector2D<std::string> CSV::getData() {
     return m_data;
 }

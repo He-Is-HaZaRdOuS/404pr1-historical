@@ -8,15 +8,15 @@
 
 class Course {
 public:
-    explicit Course(String professorName, String code, int examDuration, int studentCount = 0);
+    explicit Course(std::string professorName, std::string code, int examDuration, int studentCount = 0);
     Course();
     ~Course();
     int studentCount;
     int examDuration;
-    String professorName;
-    String code;
+    std::string professorName;
+    std::string code;
     std::vector<int> studentList;
-    std::vector<String> conflictingCourses;
+    std::vector<std::string> conflictingCourses;
     std::vector<Classroom> classrooms;
 };
 

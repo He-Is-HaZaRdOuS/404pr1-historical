@@ -4,6 +4,7 @@
 
 #define TIMESLOTCOUNT 108
 #define TIMESLOTDURATION 5
+#define ITERATIONCOUNT 100
 inline bool __Day7Needed = false;
 inline unsigned int __DimensionCount = 1;
 
@@ -33,7 +34,7 @@ public:
   int count = 0;
   vector<Classroom> classList;
   vector<Course> courseList;
-  std::array<std::vector<std::string>, 7> blockedHours;
+  Vector2D<std::string> blockedHours;
 
   void randomizedSuccesor();
   void initializeSchedule();
@@ -41,10 +42,10 @@ public:
   int cost(vector<Week> table);
   inline bool fillTable(unsigned long courseCount, std::vector<bool> &placed);
   inline void checkValidity();
-  void setBlockedHours(std::array<std::vector<std::string>, 7> blockedHours, int dim);
+  void setBlockedHours(Vector2D<std::string> blockedHours, int dim);
   inline std::vector<Classroom> getAvailableClassrooms(int day, int start, int end);
 
-  explicit Solution(vector<Course> list, vector<Classroom> classrooms,   std::array<std::vector<std::string>, 7> blockedHours);
+  explicit Solution(vector<Course> list, vector<Classroom> classrooms, Vector2D<std::string> blockedHours);
   void Solve();
 };
 

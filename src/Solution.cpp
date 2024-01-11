@@ -8,10 +8,14 @@
 #include <sstream>
 #include <unordered_map>
 
-inline void printTimeTable(const std::vector<Week>&timeTable);
+#include "Typedefs.h"
+
+inline void printTimeTable(const std::vector<Week>&timeTable, const Vector2D<std::string>&blockedList);
+
+inline std::string getRegularTime(const std::string&str);
 
 // constructor
-Solution::Solution(vector<Course> list, vector<Classroom> classrooms,   std::array<std::vector<std::string>, 7> blockedHours) {
+Solution::Solution(vector<Course> list, vector<Classroom> classrooms, Vector2D<std::string> blockedHours) {
   this->courseList = list;
   this->classList = classrooms;
   this->blockedHours = blockedHours;
@@ -89,10 +93,10 @@ TryAgain: {
     }
     /* invoke algorithm */
     isFilled = fillTable(courseCount, placed);
-  }while(!isFilled && iterationCount < 10);
+  }while(!isFilled && iterationCount < ITERATIONCOUNT);
 
   /* Unlock Day 7 and try again */
-  if(!__Day7Needed && !isFilled && iterationCount >= 10) {
+  if(!__Day7Needed && !isFilled && iterationCount >= ITERATIONCOUNT) {
     __Day7Needed = true;
     std::cout << "DAY 7 UNLOCKED!" << std::endl;
     /* invoke algorithm again after unlocking 7th day */
@@ -102,7 +106,7 @@ TryAgain: {
 
   /* FAILED */
   if(__Day7Needed && !isFilled) {
-    std::cout << "COULDNT FILL TABLE AT ALL, TERMINATING!";
+    std::cout << "COULDN'T FILL TABLE AT ALL, TERMINATING!";
     exit(1);
   }
 
@@ -178,7 +182,7 @@ TryAgain: {
       );
   }
 
-  printTimeTable(timeTable);
+  printTimeTable(timeTable, blockedHours);
 
   int placedCount = 0;
   for (int i = 0; i < courseCount; ++i) {
@@ -216,6 +220,7 @@ inline bool Solution::fillTable(const unsigned long courseCount, std::vector<boo
           const unsigned long courseTimePartition = courseList.at(c).examDuration / TIMESLOTDURATION;
           bool canFit = true;
           bool conflicts = false;
+          bool sameProfessor = false;
 
           // check if exam can fit ...
           for (int i = 0; i < courseTimePartition; ++i) {
@@ -227,19 +232,24 @@ inline bool Solution::fillTable(const unsigned long courseCount, std::vector<boo
 
             for(int otherDim = 0; otherDim < __DimensionCount; ++otherDim) {
               if(dim != otherDim) {
-                for(String& conflict: courseList.at(c).conflictingCourses) {
+                for(std::string& conflict: courseList.at(c).conflictingCourses) {
                   if(timeTable.at(otherDim).t[day][slot+i].currentCourse.code == conflict) {
                     //std::cout << timeTable.at(otherDim).t[day][slot].currentCourse.code << std::endl;
                     conflicts = true;
                     break;
                   }
                 }
+                for(int i = 0; i < courseTimePartition; ++i){
+                  if(timeTable.at(otherDim).t[day][slot+i].currentCourse.professorName == timeTable.at(dim).t[day][slot+i].currentCourse.professorName){
+                    sameProfessor = true;
+                    break;
+                  }
+                }
               }
             }
-
           }
           // ... if so, place it
-          if (canFit && !conflicts) {
+          if (canFit && !conflicts && !sameProfessor) {
             placed.at(c) = true;
             for (int i = 0; i < courseTimePartition; ++i) {
               currentDimensionIsEmpty = false;
@@ -272,24 +282,25 @@ inline bool Solution::fillTable(const unsigned long courseCount, std::vector<boo
   return placedCount == courseCount;
 }
 
-void Solution::setBlockedHours(std::array<std::vector<std::string>, 7> blockedHours, const int dim) {
-  for(int day = 0; day < 7; ++day) {
-    for(int d = 0; d < blockedHours[day].size(); ++d) {
+void Solution::setBlockedHours(Vector2D<std::string> blockedList, const int dim) {
+  for(int day = 0; day < blockedList.size(); ++day) {
+    for(int d = 1; d < blockedList.at(day).size(); d=d+2) {
       // Parse and set blocked hours
       int startTimeH, endTimeH, startTimeM, endTimeM;
-      startTimeH = std::stoi(blockedHours[day].at(d).substr(0, 2));
-      startTimeM = std::stoi(blockedHours[day].at(d).substr(3, 2));
-      endTimeH = std::stoi(blockedHours[day].at(d).substr(6, 2));
-      endTimeM = std::stoi(blockedHours[day].at(d).substr(9, 2));
+      startTimeH = std::stoi(blockedList.at(day).at(d).substr(0, 2));
+      startTimeM = std::stoi(blockedList.at(day).at(d).substr(3, 2));
+      endTimeH = std::stoi(blockedList.at(day).at(d).substr(6, 2));
+      endTimeM = std::stoi(blockedList.at(day).at(d).substr(9, 2));
 
       int startTimeSlot = ((startTimeH - 9) * 60 + startTimeM) / TIMESLOTDURATION;
       int endTimeSlot = (((endTimeH - 9) * 60 + endTimeM )/ TIMESLOTDURATION) - 1;
-      std::cout << blockedHours[day].at(d) << std::endl;
-      std::cout << "startTimeSlot: " << startTimeSlot << " endTimeSlot: " << endTimeSlot << std::endl;
+      //std::cout << blockedList.at(day).at(d) << std::endl;
+      //std::cout << "startTimeSlot: " << startTimeSlot << " endTimeSlot: " << endTimeSlot << std::endl;
 
       // Marking the timeslots as "Blocked"
       for (int timeslot = startTimeSlot; timeslot <= endTimeSlot; ++timeslot) {
         timeTable[dim].t[day][timeslot].status = BLOCKED;
+        timeTable[dim].t[day][timeslot].currentCourse = Course{"UNSPECIFIED", blockedList.at(day).at(d+1), 5*(1+endTimeSlot-startTimeSlot)};
       }
     }
   }
@@ -360,7 +371,7 @@ double Solution::cooling() {
 inline std::vector<Classroom> Solution::getAvailableClassrooms(const int day, const int start, const int end) {
   const unsigned long cSize = classList.size();
   std::vector<Classroom> result;
-  std::unordered_map<String, bool> availableClassrooms;
+  std::unordered_map<std::string, bool> availableClassrooms;
   for(Classroom& c : classList) {
     availableClassrooms.emplace(c.id, true);
   }
@@ -388,7 +399,7 @@ inline std::vector<Classroom> Solution::getAvailableClassrooms(const int day, co
   return result;
 }
 
-inline void printTimeTable(const std::vector<Week>&timeTable) {
+inline void printTimeTable(const std::vector<Week>&timeTable, const Vector2D<std::string>&blockedList) {
   const std::vector days = {
       "Monday",
       "Tuesday",
@@ -448,5 +459,73 @@ inline void printTimeTable(const std::vector<Week>&timeTable) {
     std::cout << info << std::endl;
   }
 
-  std::cout << "\nBlocked Hours:\n   (missing feature)\n\n" << std::endl;
+  std::cout << "\nBlocked Hours:\n" << std::endl;
+
+  for(const auto &row : blockedList) {
+    if(row.size() > 1){
+      std::cout << row.at(0) << std::endl;
+      for(int i = 1; i < row.size(); i=i+2){
+        std::cout << getRegularTime(row.at(i)) << "(" << row.at(i+1) << ")" << std::endl;
+      }
+      std::cout << std::endl;
+    }
+  }
+  std::cout << std::endl;
+}
+
+inline std::string getRegularTime(const std::string&str){
+  int startTimeH, endTimeH, startTimeM, endTimeM;
+  startTimeH = std::stoi(str.substr(0, 2));
+  startTimeM = std::stoi(str.substr(3, 2));
+  endTimeH = std::stoi(str.substr(6, 2));
+  endTimeM = std::stoi(str.substr(9, 2));
+
+  bool startAM = true;
+  bool endAM = true;
+  std::string startH = to_string(startTimeH);
+  std::string endH = to_string(endTimeH);
+  std::string startM = to_string(startTimeM);
+  std::string endM = to_string(endTimeM);
+
+  if(startTimeH > 12){
+    startAM = false;
+    startTimeH = startTimeH - 12;
+  }
+  if(endTimeH > 12){
+    endAM = false;
+    endTimeH = endTimeH - 12;
+  }
+  if(startTimeH < 10){
+    startH = "";
+    startH.append("0");
+    startH.append(to_string(startTimeH));
+  }
+  if(endTimeH < 10){
+    endH = "";
+    endH.append("0");
+    endH.append(to_string(endTimeH));
+  }
+  if(startTimeM < 10){
+    startM = "";
+    startM.append("0");
+    startM.append(to_string(startTimeM));
+  }
+  if(endTimeM < 10){
+    endM = "";
+    endM.append("0");
+    endM.append(to_string(endTimeM));
+  }
+
+  std::string result = "";
+  result.append(startH);
+  result.append(":");
+  result.append(startM);
+  result.append(((startAM) ? " AM " : " PM "));
+  result.append("- ");
+  result.append(endH);
+  result.append(":");
+  result.append(endM);
+  result.append(((endAM) ? " AM: Common Course " : " PM: Common Course "));
+  return result;
+
 }
