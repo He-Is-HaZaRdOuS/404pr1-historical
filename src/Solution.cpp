@@ -14,6 +14,8 @@ inline void printTimeTable(const std::vector<Week>&timeTable, const Vector2D<std
 
 inline std::string getRegularTime(const std::string&str);
 
+inline std::string getRegularTime(int startTimeH, int startTimeM, int endTimeH, int endTimeM);
+
 // constructor
 Solution::Solution(vector<Course> list, vector<Classroom> classrooms, Vector2D<std::string> blockedHours) {
   this->courseList = list;
@@ -421,12 +423,9 @@ inline void printTimeTable(const std::vector<Week>&timeTable, const Vector2D<std
           t += timeTable.at(dim).t[day][t].currentCourse.examDuration / TIMESLOTDURATION - 1;
           const std::vector<Classroom>& classrooms = timeTable.at(dim).t[day][t].currentCourse.classrooms;
           char buf[512] = {0};
+          std::string time = getRegularTime(9 + begin / 60, begin % 60, 9 + end / 60, end % 60);
           std::string info;
-          sprintf(buf, "%02d:%02d %s - ", 9 + begin / 60, begin % 60,
-                  begin / 60 >= 3 ? "PM" : "AM");
-          info += buf;
-          sprintf(buf, "%02d:%02d %s: ", 9 + end / 60, end % 60,
-                  end / 60 >= 3 ? "PM" : "AM");
+          sprintf(buf, "%s ", time.c_str());
           info += buf;
           sprintf(buf, "%-7s - ",
                   timeTable.at(dim).t[day][t].currentCourse.code.c_str());
@@ -496,12 +495,12 @@ inline std::string getRegularTime(const std::string&str){
   }
   if(startTimeH < 10){
     startH = "";
-    startH.append("0");
+    //startH.append("0");
     startH.append(to_string(startTimeH));
   }
   if(endTimeH < 10){
     endH = "";
-    endH.append("0");
+    //endH.append("0");
     endH.append(to_string(endTimeH));
   }
   if(startTimeM < 10){
@@ -527,4 +526,54 @@ inline std::string getRegularTime(const std::string&str){
   result.append(((endAM) ? " AM: Common Course " : " PM: Common Course "));
   return result;
 
+}
+
+inline std::string getRegularTime(int startTimeH, int startTimeM, int endTimeH, int endTimeM){
+  bool startAM = true;
+  bool endAM = true;
+  std::string startH = to_string(startTimeH);
+  std::string endH = to_string(endTimeH);
+  std::string startM = to_string(startTimeM);
+  std::string endM = to_string(endTimeM);
+
+  if(startTimeH > 12){
+    startAM = false;
+    startTimeH = startTimeH - 12;
+  }
+  if(endTimeH > 12){
+    endAM = false;
+    endTimeH = endTimeH - 12;
+  }
+  if(startTimeH < 10){
+    startH = "";
+    //startH.append("0");
+    startH.append(to_string(startTimeH));
+  }
+  if(endTimeH < 10){
+    endH = "";
+    //endH.append("0");
+    endH.append(to_string(endTimeH));
+  }
+  if(startTimeM < 10){
+    startM = "";
+    startM.append("0");
+    startM.append(to_string(startTimeM));
+  }
+  if(endTimeM < 10){
+    endM = "";
+    endM.append("0");
+    endM.append(to_string(endTimeM));
+  }
+
+  std::string result = "";
+  result.append(startH);
+  result.append(":");
+  result.append(startM);
+  result.append(((startAM) ? " AM " : " PM "));
+  result.append("- ");
+  result.append(endH);
+  result.append(":");
+  result.append(endM);
+  result.append(((endAM) ? " AM: " : " PM:"));
+  return result;
 }
