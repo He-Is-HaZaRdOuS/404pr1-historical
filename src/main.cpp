@@ -38,7 +38,7 @@ std::vector<Course> findConflictingCourses(std::vector<Course> courseList);
 int main() {
   std::vector<Classroom> classrooms = loadClassrooms(RESOURCES_PATH "classroom.csv");
   std::vector<Course> coursesDepartment = loadCourses(RESOURCES_PATH "course-list6.csv");
-  Vector2D<std::string> blockedHours = loadBlockedHours(RESOURCES_PATH "blocked.csv");
+  Vector2D<std::string> blockedHours = loadBlockedHours(RESOURCES_PATH "bloc7676ked.csv");
 
   coursesDepartment = findConflictingCourses(coursesDepartment);
 
@@ -86,7 +86,19 @@ std::vector<Course> loadCourses(const char* path) {
 }
 
 Vector2D<std::string> loadBlockedHours(const char* path) {
-  CSV blockedList{path};
+  CSV blockedList;
+  try {
+    CSV b{path};
+    blockedList = b;
+  }catch(...){
+    Vector2D<std::string> emptyList;
+    for(int i = 0; i < 7; ++i){
+      std::vector<std::string> temp;
+      temp.push_back(__DAYS.at(i));
+      emptyList.push_back(temp);
+    }
+    return emptyList;
+  }
   Vector2D<std::string> blockedDays = blockedList.filter(dayColumn, [](const std::string&value) {
     static std::unordered_map<std::string, bool> seen;
     if (seen.find(value) == seen.end()) {
