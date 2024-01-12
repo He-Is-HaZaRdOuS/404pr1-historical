@@ -2,11 +2,10 @@
 
 #include <algorithm>
 #include <cmath>
-#include <cstring>
 #include <iostream>
 #include <random>
-#include <sstream>
 #include <unordered_map>
+#include <limits>
 
 #include "Typedefs.h"
 
@@ -118,54 +117,59 @@ do{
    */
 
   /* assign classrooms to exams */
-  const unsigned int classListSize = courseList.size();
-  for(int day = 0; day < (__Day7Needed ? 7 : 6); ++day){
-    for( int slot = 0; slot < TIMESLOTCOUNT; ++slot){
-      for(int dim = 0; dim < __DimensionCount; ++dim) {
-        for(unsigned long cSize = 0; cSize < classListSize; ++cSize) {
-          /* check if a course does not have any classrooms assigned yet */
-          if(timeTable.at(dim).t[day][slot].currentCourse.classrooms.empty()) {
-            /* find empty classrooms in given time interval */
-            const int end = slot + (timeTable.at(dim).t[day][slot].currentCourse.examDuration / TIMESLOTDURATION);
-            std::vector<Classroom> availableClassrooms = getAvailableClassrooms(day, slot, end);
-            /* sort classrooms from in ascending order according to their capacity */
-            std::sort(availableClassrooms.begin(), availableClassrooms.end(), [](const Classroom&c1, const Classroom&c2) {
-              return c1.capacity < c2.capacity;
-            });
-
-            const unsigned long classSize = availableClassrooms.size();
-            const unsigned long courseStudentCount = timeTable.at(dim).t[day][slot].currentCourse.studentCount;
-            bool courseCanFitInOneClassroom = false;
-            /* Assign a single classroom if half of its capacity fits the number of students */
-            for(unsigned long cIndex = 0; cIndex < classSize; ++cIndex) {
-              //const unsigned long classRoomCount = timeTable.at(dim).t[day][slot].currentCourse.classrooms.size();
-              if(availableClassrooms.at(cIndex).capacity/2 >= (int)courseStudentCount) {
-                timeTable.at(dim).t[day][slot].currentCourse.classrooms.push_back(availableClassrooms.at(cIndex));
-                courseCanFitInOneClassroom = true;
-                break;
-              }
-            }
-            /* Assign multiple classrooms to course */
-            if(!courseCanFitInOneClassroom) {
-              unsigned int assignedCapacity = 0;
-              for(int i = (int)classSize - 1; assignedCapacity < courseStudentCount && i >= 0; --i) {
-                assignedCapacity = assignedCapacity + (availableClassrooms.at(i).capacity/2);
-                timeTable.at(dim).t[day][slot].currentCourse.classrooms.push_back(availableClassrooms.at(i));
-                for(int j = 0; j < i; ++j) {
-                  if((availableClassrooms.at(j).capacity/2) + assignedCapacity >= courseStudentCount) {
-                    assignedCapacity = assignedCapacity + (availableClassrooms.at(j).capacity/2);
-                    timeTable.at(dim).t[day][slot].currentCourse.classrooms.push_back(availableClassrooms.at(j));
-                    break;
-                  }
-                }
-              }
+  classroomStatus returnVal{true, 0};
+  do{
+    int newCapacity = 0;
+    std::string id;
+    if(!returnVal.returnStatus){
+      resetAssignedClassrooms();
+      if (returnVal.wantedCapacity != -1) {
+        AskForCapacityAgain:
+        // enter classroom with size wantedCapacity
+        std::cout << "PLEASE ENTER A NEW CLASSROOM WITH ID AND SIZE OF AT LEAST: " << returnVal.wantedCapacity << std::endl;
+        std::cin >> id >> newCapacity;
+        while (!std::cin.good()){
+          std::cout << "PLEASE ENTER THE ID FIRST AND THE CAPACITY SECOND!" << std::endl;
+          std::cin.clear();
+          std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+          std::cin >> id >> newCapacity;
+        }
+        if(newCapacity < returnVal.wantedCapacity){
+          std::cout << "NEW CAPACITY MUST BE BIGGER THAN OR EQUAL TO WANTED CAPACITY" << std::endl;
+          goto AskForCapacityAgain;
+        }
+        else{
+          for(const Classroom&room : classList){
+            if(room.id == id){
+              std::cout << "NEW ID MUST BE DIFFERENT FROM ALREADY EXISTING CLASSROOMS" << std::endl;
+              goto AskForCapacityAgain;
             }
           }
+          classList.emplace_back(newCapacity, id);
         }
+      } else {
+        // enter any sized classroom
+      AskForIDAgain:
+        // enter classroom with size wantedCapacity
+        std::cout << "PLEASE ENTER A NEW CLASSROOM WITH ID AND ANY SIZE" << std::endl;
+        std::cin >> id >> newCapacity;
+        while (!std::cin.good()){
+          std::cout << "PLEASE ENTER THE ID FIRST AND THE CAPACITY SECOND!" << std::endl;
+          std::cin.clear();
+          std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+          std::cin >> id >> newCapacity;
+        }
+          for(const Classroom&room : classList){
+            if(room.id == id){
+              std::cout << "NEW ID MUST BE DIFFERENT FROM ALREADY EXISTING CLASSROOMS" << std::endl;
+              goto AskForIDAgain;
+            }
+          }
+          classList.emplace_back(newCapacity, id);
       }
     }
-  }
-
+    returnVal = assignClassrooms();
+  }while(!returnVal.returnStatus);
 
 
   // print schedule (WIP)
@@ -576,4 +580,78 @@ inline std::string getRegularTime(int startTimeH, int startTimeM, int endTimeH, 
   result.append(endM);
   result.append(((endAM) ? " AM: " : " PM:"));
   return result;
+
+}
+
+inline classroomStatus Solution::assignClassrooms(){
+  const unsigned int classListSize = courseList.size();
+  for(int day = 0; day < (__Day7Needed ? 7 : 6); ++day){
+    for( int slot = 0; slot < TIMESLOTCOUNT; ++slot){
+      for(int dim = 0; dim < __DimensionCount; ++dim) {
+        for(unsigned long cSize = 0; cSize < classListSize; ++cSize) {
+          /* check if a course does not have any classrooms assigned yet */
+          if(timeTable.at(dim).t[day][slot].currentCourse.classrooms.empty()) {
+            /* find empty classrooms in given time interval */
+            const int end = slot + (timeTable.at(dim).t[day][slot].currentCourse.examDuration / TIMESLOTDURATION);
+            std::vector<Classroom> availableClassrooms = getAvailableClassrooms(day, slot, end);
+            // return false if no classrooms are available
+            if (availableClassrooms.empty()) {
+              return classroomStatus{false, -1};
+            }
+
+            /* sort classrooms from in ascending order according to their capacity */
+            std::sort(availableClassrooms.begin(), availableClassrooms.end(),
+                      [](const Classroom &c1, const Classroom &c2)
+                      {
+                        return c1.capacity < c2.capacity;
+                      });
+
+            const unsigned long classSize = availableClassrooms.size();
+            const unsigned long courseStudentCount = timeTable.at(dim).t[day][slot].currentCourse.studentCount;
+            bool courseCanFitInOneClassroom = false;
+            /* Assign a single classroom if half of its capacity fits the number of students */
+            for (unsigned long cIndex = 0; cIndex < classSize; ++cIndex) {
+              // const unsigned long classRoomCount = timeTable.at(dim).t[day][slot].currentCourse.classrooms.size();
+              if (availableClassrooms.at(cIndex).capacity / 2 >= (int)courseStudentCount) {
+                timeTable.at(dim).t[day][slot].currentCourse.classrooms.push_back(availableClassrooms.at(cIndex));
+                courseCanFitInOneClassroom = true;
+                break;
+              }
+            }
+            /* Assign multiple classrooms to course */
+            if (!courseCanFitInOneClassroom){
+              unsigned int assignedCapacity = 0;
+              for (int i = (int)classSize - 1; assignedCapacity < courseStudentCount && i >= 0; --i) {
+                // assign biggest available classroom and update variable
+                assignedCapacity = assignedCapacity + (availableClassrooms.at(i).capacity / 2);
+                timeTable.at(dim).t[day][slot].currentCourse.classrooms.push_back(availableClassrooms.at(i));
+                for (int j = 0; j < i; ++j) {
+                  if ((availableClassrooms.at(j).capacity / 2) + assignedCapacity >= courseStudentCount) {
+                    assignedCapacity = assignedCapacity + (availableClassrooms.at(j).capacity / 2);
+                    timeTable.at(dim).t[day][slot].currentCourse.classrooms.push_back(availableClassrooms.at(j));
+                    break;
+                  }
+                }
+              }
+              // başaramadık abi
+              if (assignedCapacity < courseStudentCount) {
+                int r = courseStudentCount - assignedCapacity;
+                return classroomStatus{false, r};
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  return classroomStatus{true, 0};
+}
+void Solution::resetAssignedClassrooms() {
+  for (int dim = 0; dim < __DimensionCount; ++dim){
+    for(int day = 0; day < (__Day7Needed ? 7 : 6); ++day){
+      for (int slot = 0; slot < TIMESLOTCOUNT; ++slot) {
+        timeTable.at(dim).t[day][slot].currentCourse.classrooms.clear();
+      }
+    }
+  }
 }

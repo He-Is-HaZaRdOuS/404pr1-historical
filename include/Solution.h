@@ -21,6 +21,11 @@ typedef struct Week {
   Timeslot t[7][TIMESLOTCOUNT];
 } Week;
 
+typedef struct classroomStatus {
+  bool returnStatus;
+  int wantedCapacity;
+} classroomStatus;
+
 using namespace std;
 
 class Solution{
@@ -44,7 +49,8 @@ public:
   inline void checkValidity();
   void setBlockedHours(Vector2D<std::string> blockedHours, int dim);
   inline std::vector<Classroom> getAvailableClassrooms(int day, int start, int end);
-
+  inline classroomStatus assignClassrooms();
+  inline void resetAssignedClassrooms();
   explicit Solution(vector<Course> list, vector<Classroom> classrooms, Vector2D<std::string> blockedHours);
   void Solve();
 };

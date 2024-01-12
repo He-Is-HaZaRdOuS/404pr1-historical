@@ -12,6 +12,7 @@ class CSV {
 
 public:
     explicit CSV(const char* path, char separator = ',');
+    CSV();
 
   void printRows(const std::string&separator = ",") const;
 

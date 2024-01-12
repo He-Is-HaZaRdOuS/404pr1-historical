@@ -83,3 +83,4 @@ Vector2D<std::string> CSV::filter(int column, std::string&value) const {
 Vector2D<std::string> CSV::getData() {
     return m_data;
 }
+CSV::CSV() {}
