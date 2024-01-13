@@ -36,8 +36,8 @@ Vector2D<std::string> loadBlockedHours(const char* path);
 std::vector<Course> findConflictingCourses(std::vector<Course> courseList);
 
 int main() {
-  std::vector<Classroom> classrooms = loadClassrooms(RESOURCES_PATH "classroom.csv");
-  std::vector<Course> coursesDepartment = loadCourses(RESOURCES_PATH "course-list6.csv");
+  std::vector<Classroom> classrooms = loadClassrooms(RESOURCES_PATH "classroom2.csv");
+  std::vector<Course> coursesDepartment = loadCourses(RESOURCES_PATH "course-list7.csv");
   Vector2D<std::string> blockedHours = loadBlockedHours(RESOURCES_PATH "bloc7676ked.csv");
 
   coursesDepartment = findConflictingCourses(coursesDepartment);
@@ -55,7 +55,10 @@ int main() {
 }
 
 std::vector<Course> loadCourses(const char* path) {
-  const CSV courseList{path};
+  CSV courseList{path};
+  if (courseList.getData().at(0).at(0) == "STUDENTID") {
+    courseList.removeHeader();
+  }
   std::vector<Course> courses;
   const Vector2D<std::string> uniqueCourses = courseList.filter(codeColumn, [](const std::string&value) {
     static std::unordered_map<std::string, bool> seen;
@@ -312,6 +315,9 @@ Vector2D<std::string> loadBlockedHours(const char* path) {
 
 std::vector<Classroom> loadClassrooms(const char* path) {
   CSV classroomList{path};
+  if (classroomList.getData().at(0).at(0) == "ROOMID") {
+    classroomList.removeHeader();
+  }
   std::vector<Classroom> classrooms;
   for (std::vector<std::string> row: classroomList.getData()) {
     classrooms.emplace_back(std::stoi(row.at(capacityColumn)), row.at(idColumn));
@@ -328,6 +334,11 @@ std::vector<Course> findConflictingCourses(std::vector<Course> courseList) {
       bool skip = false;
       const unsigned long L2S = courseList.at(j).studentList.size();
       if (i != j) {
+        if (courseList.at(i).professorName == courseList.at(j).professorName) {
+          courseList.at(i).conflictingCourses.push_back(courseList.at(j).code);
+          courseList.at(j).conflictingCourses.push_back(courseList.at(i).code);
+          skip = true;
+        }
         for (unsigned long k = 0; !skip && k < L1S; k++) {
           for (unsigned long l = 0; !skip && l < L2S; l++) {
             if (courseList.at(i).studentList.at(k) == courseList.at(j).studentList.at(l)) {

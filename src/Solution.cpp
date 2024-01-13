@@ -124,6 +124,7 @@ do{
     if(!returnVal.returnStatus){
       resetAssignedClassrooms();
       if (returnVal.wantedCapacity != -1) {
+        returnVal.wantedCapacity *= 2; // Leave empty seats between students
         AskForCapacityAgain:
         // enter classroom with size wantedCapacity
         std::cout << "PLEASE ENTER A NEW CLASSROOM WITH ID AND SIZE OF AT LEAST: " << returnVal.wantedCapacity << std::endl;

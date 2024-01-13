@@ -83,4 +83,10 @@ Vector2D<std::string> CSV::filter(int column, std::string&value) const {
 Vector2D<std::string> CSV::getData() {
     return m_data;
 }
+
 CSV::CSV() {}
+
+void CSV::removeHeader() {
+    m_rows--;
+    m_data.erase(m_data.begin(), m_data.begin()+1);
+}

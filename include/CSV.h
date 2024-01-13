@@ -30,7 +30,9 @@ public:
      */
     Vector2D<std::string> filter(long column, bool (*filter)(const std::string&value)) const;
 
-    Vector2D<std::string> filter(int column, std::string&value) const;
+    Vector2D<std::string> filter(int column, std::string &value) const;
+
+    void removeHeader();
 };
 
 #endif //CSV_H
