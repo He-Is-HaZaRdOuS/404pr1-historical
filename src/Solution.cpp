@@ -45,11 +45,25 @@ void Solution::Solve(const int nValue) {
   }
   std::cout << std::endl;
 
-  /* find best schedule with minimum cost */
+  bool day6exists = false;
   scheduleStatus min = schedules.at(0);
-  for(int n = 1; n < N; ++n){
+  for(int n = 0; n < N; ++n){
+    if(!schedules.at(n).day) {
+      day6exists = true;
+      min = schedules.at(n);
+    }
+  }
+
+  /* find best schedule with minimum cost and days needed */
+  for(int n = 0; n < N; ++n){
+    if(day6exists) {
+      if(schedules.at(n).cost < min.cost && !schedules.at(n).day)
+        min = schedules.at(n);
+    }
+    else {
       if(schedules.at(n).cost < min.cost)
-          min = schedules.at(n);
+        min = schedules.at(n);
+    }
   }
 
   /* update global variables to those of the best schedule */
