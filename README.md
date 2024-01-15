@@ -1,5 +1,6 @@
 # 303pr1
-Placeholder repository for CENG303's Term project.
+Placeholder repository for CENG303's Term project. </br>
+https://github.com/He-Is-HaZaRdOuS/303pr1
 
 # Disclaimer!
 CMake does not recognize non-english characters in the build path. </br>
