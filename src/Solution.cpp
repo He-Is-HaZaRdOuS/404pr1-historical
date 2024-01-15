@@ -23,9 +23,9 @@ Solution::Solution(vector<Course> list, vector<Classroom> classrooms, Vector2D<s
 }
 
 /* Generates N-many schedules and picks the best one out of the bunch */
-void Solution::Solve() {
+void Solution::Solve(const int nValue) {
   vector<Week> newSchedule;
-  int N = 100;
+  int N = nValue;
   int F = 0;
   const int LOWER_LIMIT = 10;
   std::vector<scheduleStatus> schedules;
@@ -41,8 +41,9 @@ void Solution::Solve() {
         std::cout << "Most schedules so far have failed, trying " << LOWER_LIMIT << " more times." << std::endl;
       }
       schedules.at(n).cost = cost(schedules.at(n).schedule, schedules.at(n).dim);
-      std::cout << "Iteration Count: " << n+1 << std::endl;
+      std::cout << "\rIteration Count: " << n+1 << "/" << N << std::flush;
   }
+  std::cout << std::endl;
 
   /* find best schedule with minimum cost */
   scheduleStatus min = schedules.at(0);

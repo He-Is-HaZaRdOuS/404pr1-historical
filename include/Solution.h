@@ -52,7 +52,7 @@ public:
     vector<Course> courseList;
     Vector2D<std::string> blockedHours;
 
-    void Solve();
+    void Solve(int nValue);
     inline scheduleStatus initializeSchedule();
     int cost(vector<Week> &table, int &dim);
     inline bool fillTable(std::vector<Week> &schedule, unsigned long courseCount, std::vector<bool> &placed, int &dimensionCount, bool day7Needed);
