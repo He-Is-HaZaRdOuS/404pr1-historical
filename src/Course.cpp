@@ -12,7 +12,3 @@ Course::Course() = default;
 Course::~Course() {
 
 }
-
-
-
-

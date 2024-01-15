@@ -1,7 +1,6 @@
 #include "Solution.h"
 
 #include <algorithm>
-#include <cmath>
 #include <iostream>
 #include <random>
 #include <unordered_map>
@@ -9,168 +8,111 @@
 
 #include "Typedefs.h"
 
+/* function prototypes */
 inline void printTimeTable(const std::vector<Week>&timeTable, const Vector2D<std::string>&blockedList);
 
 inline std::string getRegularTime(const std::string&str);
 
 inline std::string getRegularTime(int startTimeH, int startTimeM, int endTimeH, int endTimeM);
 
-// constructor
+/* constructor */
 Solution::Solution(vector<Course> list, vector<Classroom> classrooms, Vector2D<std::string> blockedHours) {
   this->courseList = list;
   this->classList = classrooms;
   this->blockedHours = blockedHours;
 }
 
-// pseudocode of simulated annealing
+/* Generates N-many schedules and picks the best one out of the bunch */
 void Solution::Solve() {
-  int newScore;
-  int oldScore;
-  int delta;
+  vector<Week> newSchedule;
+  int N = 100;
+  int F = 0;
+  const int LOWER_LIMIT = 10;
+  std::vector<scheduleStatus> schedules;
+  schedules.reserve(N);
 
-  //fill the sudoku table random
-  initializeSchedule();
-  oldScore = cost(timeTable);
-
-  while (tempmax > tempmin) {
-    for (int i = 0; i < iterationTimes; i++) {
-      if (oldScore == 0) {
-        tempmax = tempmin;
-        break;
+  for(int n = 0; n < N; ++n){
+      schedules.push_back(initializeSchedule()); // make new random schedule
+      if(schedules.at(n).cost == -2){ // failed to make schedule
+        ++F;
       }
-
-      //get new sudoku board according to a logic
-      //newSchedule = randomizeSuccesor(board);
-      //newScore = cost(newboard);
-      delta = newScore - oldScore;
-      if (delta > 0) {
-        //probability of accepting bad moves
-        if ((rand() % 1000) / 1000.0 < exp(-delta / (K * tempmax))) {
-          //Schedule = newSchedule;
-          oldScore = newScore;
-        }
-        //accept good moves always
+      if(N-F < LOWER_LIMIT){ // less than 10 successful schedules out of N
+        N=N+LOWER_LIMIT; // increase N to iterate more
+        std::cout << "Most schedules so far have failed, trying " << LOWER_LIMIT << " more times." << std::endl;
       }
-      else {
-        //Schedule = newSchedule;
-        oldScore = newScore;
-      }
-      //keep number of all iterations
-      count++;
-    }
-    // decrase the temperature
-    tempmax = cooling();
-  }
-}
-
-// make a small change in schedule
-void Solution::randomizedSuccesor() {
-}
-
-// make first schedule according to a logic
-void Solution::initializeSchedule() {
-  const unsigned long courseCount = courseList.size();
-  std::vector<bool> placed = std::vector<bool>(courseCount);;
-  bool isFilled = false;
-
-do{
-  int iterationCount = 0;
-  do {
-    if(!isFilled) {
-      /* initialize everything necessary */
-      std::cout << iterationCount << std::endl;
-      ++iterationCount;
-      __DimensionCount = 1;
-      timeTable.clear();
-      // mark all courses as "not placed"
-      for (unsigned long i = 0; i < courseCount; ++i) {
-        placed.at(i) = false;
-      }
-      /* shuffle vectors and try again */
-      auto rd = std::random_device {};
-      auto rng = std::default_random_engine { rd() };
-      std::shuffle(std::begin(courseList), std::end(courseList), rng);
-      std::shuffle(std::begin(placed), std::end(placed), rng);
-    }
-    /* invoke algorithm */
-    isFilled = fillTable(courseCount, placed);
-  }while(!isFilled && iterationCount < ITERATIONCOUNT);
-
-  /* Unlock Day 7 and try again */
-  if(!__Day7Needed && !isFilled) {
-    __Day7Needed = true;
-    std::cout << "DAY 7 UNLOCKED!" << std::endl;
-    /* invoke algorithm again after unlocking 7th day */
-  }
-  else
-    break;
-}while(true);
-
-  /* FAILED */
-  if(__Day7Needed && !isFilled) {
-    std::cout << "COULDN'T FILL TABLE AT ALL, TERMINATING!";
-    exit(1);
+      schedules.at(n).cost = cost(schedules.at(n).schedule, schedules.at(n).dim);
+      std::cout << "Iteration Count: " << n+1 << std::endl;
   }
 
-  /* TODO
-     * Simulated Annealing may have to be done before assignment of classrooms xo
-   */
+  /* find best schedule with minimum cost */
+  scheduleStatus min = schedules.at(0);
+  for(int n = 1; n < N; ++n){
+      if(schedules.at(n).cost < min.cost)
+          min = schedules.at(n);
+  }
 
-  /* assign classrooms to exams */
-  classroomStatus returnVal{true, 0};
-  do{
-    int newCapacity = 0;
-    std::string id;
-    if(!returnVal.returnStatus){
-      resetAssignedClassrooms();
-      if (returnVal.wantedCapacity != -1) {
-        returnVal.wantedCapacity *= 2; // Leave empty seats between students
-        AskForCapacityAgain:
-        // enter classroom with size wantedCapacity
-        std::cout << "PLEASE ENTER A NEW CLASSROOM WITH ID AND SIZE OF AT LEAST: " << returnVal.wantedCapacity << std::endl;
-        std::cin >> id >> newCapacity;
-        while (!std::cin.good()){
-          std::cout << "PLEASE ENTER THE ID FIRST AND THE CAPACITY SECOND!" << std::endl;
-          std::cin.clear();
-          std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+  /* update global variables to those of the best schedule */
+  __DimensionCount = min.dim;
+  __Day7Needed = min.day;
+  __placed = min.placed;
+  timeTable = min.schedule;
+
+    /* assign classrooms to exams */
+    classroomStatus returnVal{true, 0};
+    do{
+      int newCapacity = 0;
+      std::string id;
+      if(!returnVal.returnStatus){
+        resetAssignedClassrooms();
+        if (returnVal.wantedCapacity != -1) {
+          returnVal.wantedCapacity *= 2; // Leave empty seats between students
+          AskForCapacityAgain:
+          // enter classroom with size wantedCapacity
+          std::cout << "PLEASE ENTER A NEW CLASSROOM WITH ID AND SIZE OF AT LEAST: " << returnVal.wantedCapacity << std::endl;
           std::cin >> id >> newCapacity;
-        }
-        if(newCapacity < returnVal.wantedCapacity){
-          std::cout << "NEW CAPACITY MUST BE BIGGER THAN OR EQUAL TO WANTED CAPACITY" << std::endl;
-          goto AskForCapacityAgain;
-        }
-        else{
-          for(const Classroom&room : classList){
-            if(room.id == id){
-              std::cout << "NEW ID MUST BE DIFFERENT FROM ALREADY EXISTING CLASSROOMS" << std::endl;
-              goto AskForCapacityAgain;
-            }
+          while (!std::cin.good()){
+            std::cout << "PLEASE ENTER THE ID FIRST AND THE CAPACITY SECOND!" << std::endl;
+            std::cin.clear();
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            std::cin >> id >> newCapacity;
           }
-          classList.emplace_back(newCapacity, id);
-        }
-      } else {
-        // enter any sized classroom
-      AskForIDAgain:
-        // enter classroom with size wantedCapacity
-        std::cout << "PLEASE ENTER A NEW CLASSROOM WITH ID AND ANY SIZE" << std::endl;
-        std::cin >> id >> newCapacity;
-        while (!std::cin.good()){
-          std::cout << "PLEASE ENTER THE ID FIRST AND THE CAPACITY SECOND!" << std::endl;
-          std::cin.clear();
-          std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+          if(newCapacity < returnVal.wantedCapacity){
+            std::cout << "NEW CAPACITY MUST BE BIGGER THAN OR EQUAL TO WANTED CAPACITY" << std::endl;
+            goto AskForCapacityAgain;
+          }
+          else{
+            for(const Classroom&room : classList){
+              if(room.id == id){
+                std::cout << "NEW ID MUST BE DIFFERENT FROM ALREADY EXISTING CLASSROOMS" << std::endl;
+                goto AskForCapacityAgain;
+              }
+            }
+            classList.emplace_back(newCapacity, id);
+          }
+        } else {
+          // enter any sized classroom
+        AskForIDAgain:
+          // enter classroom with size wantedCapacity
+          std::cout << "PLEASE ENTER A NEW CLASSROOM WITH ID AND ANY SIZE" << std::endl;
           std::cin >> id >> newCapacity;
-        }
-          for(const Classroom&room : classList){
-            if(room.id == id){
-              std::cout << "NEW ID MUST BE DIFFERENT FROM ALREADY EXISTING CLASSROOMS" << std::endl;
-              goto AskForIDAgain;
-            }
+          while (!std::cin.good()){
+            std::cout << "PLEASE ENTER THE ID FIRST AND THE CAPACITY SECOND!" << std::endl;
+            std::cin.clear();
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            std::cin >> id >> newCapacity;
           }
-          classList.emplace_back(newCapacity, id);
+            for(const Classroom&room : classList){
+              if(room.id == id){
+                std::cout << "NEW ID MUST BE DIFFERENT FROM ALREADY EXISTING CLASSROOMS" << std::endl;
+                goto AskForIDAgain;
+              }
+            }
+            classList.emplace_back(newCapacity, id);
+        }
       }
-    }
-    returnVal = assignClassrooms();
-  }while(!returnVal.returnStatus);
+      returnVal = assignClassrooms();
+    }while(!returnVal.returnStatus);
+
 
 
   // print schedule (WIP)
@@ -190,37 +132,102 @@ do{
       );
   }
 
-  printTimeTable(timeTable, blockedHours);
 
-  int placedCount = 0;
-  for (unsigned long i = 0; i < courseCount; ++i) {
-    if (placed.at(i)) {
-      ++placedCount;
+printTimeTable(timeTable, blockedHours);
+
+    const unsigned long courseCount = courseList.size();
+    int placedCount = 0;
+    for (unsigned long i = 0; i < courseCount; ++i) {
+        if (__placed.at(i)) {
+            ++placedCount;
+        }
+        else {
+            std::cout << "Couldn't place " << courseList.at(i).code << std::endl;
+        }
+
     }
-    else {
-      std::cout << "Couldn't place " << courseList.at(i).code << std::endl;
-    }
+    std::cout << "Dimensions:  " << __DimensionCount << std::endl;
 
-  }
-  std::cout << "Dimensions:  " << __DimensionCount << std::endl;
+    std::cout << "Number of days: " << (__Day7Needed ? 7 : 6) << std::endl;
 
-  std::cout << "Number of days: " << (__Day7Needed ? 7 : 6) << std::endl;
+    std::cout << "Placed course count: " << placedCount << std::endl;
 
-  std::cout << "Placed course count: " << placedCount << std::endl;
+    std::cout << "Cost: " << min.cost << std::endl;
 
-  std::cout << "Finished";
+    if(checkValidityPrint(timeTable))
+      std::cout << "Finished" << std::endl;
 
-  checkValidity();
 }
 
-inline bool Solution::fillTable(const unsigned long courseCount, std::vector<bool> &placed) {
+// make first schedule according to a logic
+inline scheduleStatus Solution::initializeSchedule() {
+
+     bool day7Needed = false;
+     int dimensionCount = 1;
+     int returnValue = -1;
+     std::vector<bool> placed;
+     std::vector<Week> schedule;
+
+  const unsigned long courseCount = courseList.size();
+  placed = std::vector<bool>(courseCount);
+  bool isFilled = false;
+
+do{
+  int iterationCount = 0;
+  do {
+    if(!isFilled) {
+      /* initialize everything necessary */
+      //std::cout << iterationCount << std::endl;
+      ++iterationCount;
+      dimensionCount = 1;
+      timeTable.clear();
+      // mark all courses as "not placed"
+      for (unsigned long i = 0; i < courseCount; ++i) {
+        placed.at(i) = false;
+      }
+      /* shuffle vectors and try again */
+      auto rd = std::random_device {};
+      auto rng = std::default_random_engine { rd() };
+      std::shuffle(std::begin(courseList), std::end(courseList), rng);
+      std::shuffle(std::begin(placed), std::end(placed), rng);
+    }
+    /* invoke algorithm */
+    isFilled = fillTable(schedule, courseCount, placed, dimensionCount, day7Needed);
+  }while(!isFilled && iterationCount < ITERATIONCOUNT);
+
+  /* Unlock Day 7 and try again */
+  if(!day7Needed && !isFilled) {
+    day7Needed = true;
+    //std::cout << "DAY 7 UNLOCKED!" << std::endl;
+    /* invoke algorithm again after unlocking 7th day */
+  }
+  else
+    break;
+}while(true);
+
+  /* FAILED */
+  if(day7Needed && !isFilled) {
+    returnValue = -2;
+    //std::cout << "COULDN'T FILL TABLE AT ALL, TERMINATING!";
+    //exit(1);
+  }
+  /*
+   * returnValue = -1 : SUCCESS
+   * returnValue = -2 : FAILED (increment F)
+   * */
+  return scheduleStatus{schedule, placed, dimensionCount, returnValue, day7Needed};
+
+}
+
+/* fill table linearly without causing conflicts */
+inline bool Solution::fillTable(std::vector<Week> &schedule, const unsigned long courseCount, std::vector<bool> &placed, int &dimensionCount, bool day7Needed) {
   // for each slot...
-  for (int dim = 0; dim < (int)__DimensionCount; ++dim) {
-    if(timeTable.size() < (unsigned long)__DimensionCount)
-      this->timeTable.push_back(Week{});
-    setBlockedHours(blockedHours, dim);
+  for (int dim = 0; dim < (int)dimensionCount; ++dim) {
+    if(schedule.size() < (unsigned long)dimensionCount)
+      schedule.push_back(Week{});
+    setBlockedHours(schedule, blockedHours, dim);
     bool currentDimensionIsEmpty = true;
-    for (int day = 0; day < (__Day7Needed ? 7 : 6); day++) {
+    for (int day = 0; day < (day7Needed ? 7 : 6); day++) {
       for (int slot = 0; slot < TIMESLOTCOUNT; ++slot) {
         // ... find a course to place contiguously
         for (unsigned long c = 0; c < courseCount; ++c) {
@@ -232,22 +239,22 @@ inline bool Solution::fillTable(const unsigned long courseCount, std::vector<boo
 
           // check if exam can fit ...
           for (int i = 0; i < (int)courseTimePartition; ++i) {
-            if (slot + i >= TIMESLOTCOUNT || timeTable.at(dim).t[day][slot + i].status != AVAILABLE || timeTable.at(dim).t[day][slot + i].status == BLOCKED) {
+            if (slot + i >= TIMESLOTCOUNT || schedule.at(dim).t[day][slot + i].status != AVAILABLE || schedule.at(dim).t[day][slot + i].status == BLOCKED) {
 
               canFit = false;
               break;
             }
 
-            for(int otherDim = 0; otherDim < (int)__DimensionCount; ++otherDim) {
+            for(int otherDim = 0; otherDim < (int)dimensionCount; ++otherDim) {
               if(dim != otherDim) {
                 for(std::string& conflict: courseList.at(c).conflictingCourses) {
-                  if(timeTable.at(otherDim).t[day][slot+i].currentCourse.code == conflict) {
-                    //std::cout << timeTable.at(otherDim).t[day][slot].currentCourse.code << std::endl;
+                  if(schedule.at(otherDim).t[day][slot+i].currentCourse.code == conflict) {
+                    //std::cout << schedule.at(otherDim).t[day][slot].currentCourse.code << std::endl;
                     conflicts = true;
                     break;
                   }
                 }
-                  if(timeTable.at(otherDim).t[day][slot+i].currentCourse.professorName == timeTable.at(dim).t[day][slot+i].currentCourse.professorName){
+                  if(schedule.at(otherDim).t[day][slot+i].currentCourse.professorName == schedule.at(dim).t[day][slot+i].currentCourse.professorName){
                     sameProfessor = true;
                     break;
                 }
@@ -259,8 +266,8 @@ inline bool Solution::fillTable(const unsigned long courseCount, std::vector<boo
             placed.at(c) = true;
             for (int i = 0; i < courseTimePartition; ++i) {
               currentDimensionIsEmpty = false;
-              timeTable.at(dim).t[day][slot+i].status = OCCUPIED;
-              timeTable.at(dim).t[day][slot+i].currentCourse = courseList.at(c);
+              schedule.at(dim).t[day][slot+i].status = OCCUPIED;
+              schedule.at(dim).t[day][slot+i].currentCourse = courseList.at(c);
             }
           }
         }
@@ -271,12 +278,12 @@ inline bool Solution::fillTable(const unsigned long courseCount, std::vector<boo
     }
     else {
       /* increment dimension and assign attempt to assign non-intersecting courses */
-      ++__DimensionCount;
+      ++dimensionCount;
     }
   }
   /* get rid of empty dimension (dirty fix) */
-  __DimensionCount--;
-  timeTable.pop_back();
+  dimensionCount--;
+  schedule.pop_back();
 
   unsigned long placedCount = 0;
   for (unsigned long i = 0; i < courseCount; ++i) {
@@ -288,7 +295,8 @@ inline bool Solution::fillTable(const unsigned long courseCount, std::vector<boo
   return placedCount == courseCount;
 }
 
-void Solution::setBlockedHours(Vector2D<std::string> blockedList, const int dim) {
+/* fill time slots of blocked hours and block them from being used */
+void Solution::setBlockedHours(std::vector<Week> &schedule, Vector2D<std::string> blockedList, const int dim) {
   for(unsigned long day = 0; day < blockedList.size(); ++day) {
     for(unsigned long d = 1; d < blockedList.at(day).size(); d=d+2) {
       // Parse and set blocked hours
@@ -305,72 +313,63 @@ void Solution::setBlockedHours(Vector2D<std::string> blockedList, const int dim)
 
       // Marking the timeslots as "Blocked"
       for (int timeslot = startTimeSlot; timeslot <= endTimeSlot; ++timeslot) {
-        timeTable[dim].t[day][timeslot].status = BLOCKED;
-        timeTable[dim].t[day][timeslot].currentCourse = Course{"UNSPECIFIED", blockedList.at(day).at(d+1), 5*(1+endTimeSlot-startTimeSlot)};
+        schedule[dim].t[day][timeslot].status = BLOCKED;
+        schedule[dim].t[day][timeslot].currentCourse = Course{"UNSPECIFIED", blockedList.at(day).at(d+1), 5*(1+endTimeSlot-startTimeSlot)};
       }
     }
   }
 }
 
 
-inline void Solution::checkValidity() {
-  for (int dim = 0; dim < __DimensionCount; ++dim) {
-    for (int day = 0; day < (__Day7Needed ? 7 : 6); day++) {
-      for (int slot = 0; slot < TIMESLOTCOUNT; ++slot) {
-        const unsigned long conflictSize = timeTable.at(dim).t[day][slot].currentCourse.conflictingCourses.size();
-        for(unsigned long cSize = 0; cSize < conflictSize; ++cSize) {
-          for(int otherDim = 0; otherDim < __DimensionCount; ++otherDim) {
-            if(timeTable.at(otherDim).t[day][slot].currentCourse.code == timeTable.at(dim).t[day][slot].currentCourse.conflictingCourses.at(cSize)) {
-              std::cout << "ILLEGAL " << timeTable.at(dim).t[day][slot].currentCourse.code << " conflicts with " << timeTable.at(dim).t[day][slot].currentCourse.conflictingCourses.at(cSize) << std::endl;
+/* check the entire schedule for conflicting courses (same student or same professor at the same time) */
+inline bool Solution::checkValidityPrint(vector<Week> &table) {
+    bool t = true;
+    for (int dim = 0; dim < __DimensionCount; ++dim) {
+        for (int day = 0; day < (__Day7Needed ? 7 : 6); day++) {
+            for (int slot = 0; slot < TIMESLOTCOUNT; ++slot) {
+                const unsigned long conflictSize = table.at(dim).t[day][slot].currentCourse.conflictingCourses.size();
+                for(unsigned long cSize = 0; cSize < conflictSize; ++cSize) {
+                    for(int otherDim = 0; otherDim < __DimensionCount; ++otherDim) {
+                        if(dim != otherDim && table.at(otherDim).t[day][slot].status == OCCUPIED && table.at(dim).t[day][slot].status == OCCUPIED)
+                        if(table.at(otherDim).t[day][slot].currentCourse.code == table.at(dim).t[day][slot].currentCourse.conflictingCourses.at(cSize)) {
+                            std::cout << "ILLEGAL " << table.at(otherDim).t[day][slot].currentCourse.code << " conflicts with " << table.at(dim).t[day][slot].currentCourse.conflictingCourses.at(cSize) << std::endl;
+                            t = false;
+                        }
+                    }
+                }
             }
-          }
         }
-      }
     }
-  }
+
+    return t;
 }
 
-// calculate cost
-int Solution::cost(vector<Week> table) {
-  int cost = 0;
+/* return an integer representing how bad this schedule is for certain students */
+/* cost is incremented when a student has more than one exam on the same day */
+int Solution::cost(vector<Week> &table, int &dim) {
+    int cost = 0;
 
-  for(int day = 0; day < (__Day7Needed ? 7 : 6); ++day) {
-    for(int i = 0; i < __DimensionCount; ++i)
-      for(int j = 0; j < TIMESLOTCOUNT; ++j) {
-
-        if(table.at(i).t[day][j].status == OCCUPIED)
-          for(int l = 0; l < __DimensionCount; ++l)
-            for(int k = 0; k < TIMESLOTCOUNT; ++k) {
-
-              if(table.at(l).t[day][k].status == OCCUPIED && table.at(i).t[day][j].currentCourse.code != table.at(l).t[day][k].currentCourse.code) {
-
-                //                check for same instructor
-                if(table.at(i).t[day][j].currentCourse.professorName
-                    == table.at(l).t[day][k].currentCourse.professorName) {
-                  ++cost;
+    for (int day = 0; day < (__Day7Needed ? 7 : 6); ++day) {
+        std::vector<Course> dayList = extractCoursesFromDay(table, day, dim);
+        const unsigned long dayListSize = dayList.size();
+        for (unsigned long c1Index = 0; c1Index < dayListSize; ++c1Index) {
+            const unsigned long c1SSize = dayList.at(c1Index).studentCount;
+            for (unsigned long s1Index = 0; s1Index < c1SSize; ++s1Index) {
+                for (unsigned long c2Index = c1Index + 1; c2Index < dayListSize; ++c2Index) {
+                    if (std::binary_search(dayList.at(c2Index).studentList.begin(),
+                                           dayList.at(c2Index).studentList.end(),
+                                           dayList.at(c1Index).studentList.at(s1Index))) {
+                        ++cost;
+                    }
                 }
 
-                //                check for same students
-                for(auto &a : table.at(i).t[day][j].currentCourse.conflictingCourses) {
-                  if(a == table.at(l).t[day][k].currentCourse.code)
-                    ++cost;
-                }
-
-                //                check for same class years (CENG101 - CENG102)
-                if(table.at(i).t[day][j].currentCourse.code.at(4) == table.at(l).t[day][k].currentCourse.code.at(4))
-                  ++cost;
-              }
             }
-      }
-  }
 
-  cout << "\ncost: " << cost << endl;
-  return 0;
-}
+        }
 
-// for annealing process
-double Solution::cooling() {
-  return tempmax * alpha;
+    }
+
+  return cost;
 }
 
 /* return a vector of non-intersecting classrooms for the given time interval */
@@ -405,16 +404,8 @@ inline std::vector<Classroom> Solution::getAvailableClassrooms(const int day, co
   return result;
 }
 
+/* print the information in a neat fashion */
 inline void printTimeTable(const std::vector<Week>&timeTable, const Vector2D<std::string>&blockedList) {
-  const std::vector days = {
-      "Monday",
-      "Tuesday",
-      "Wednesday",
-      "Thursday",
-      "Friday",
-      "Saturday",
-      "Sunday",
-  };
   constexpr int dayOffset = 100000;
 
   std::vector<std::pair<int,std::string>> exams;
@@ -457,25 +448,36 @@ inline void printTimeTable(const std::vector<Week>&timeTable, const Vector2D<std
   for (const auto &[when, info] : exams) {
     if (when / dayOffset > day) {
       day = when / dayOffset;
-      std::cout << "\n" << days[day] << "\n\n";
+      std::cout << "\n" << __DAYS[day] << "\n\n";
     }
     std::cout << info << std::endl;
   }
 
-  std::cout << "\nBlocked Hours:\n" << std::endl;
+  std::cout << "\nBlocked Hours: ";
 
+  int blockedDay = 0;
+  bool blockedExists = false;
   for(const auto &row : blockedList) {
     if(row.size() > 1){
-      std::cout << row.at(0) << std::endl;
+      if(!blockedExists){
+        blockedExists = true;
+        std::cout << std::endl;
+      }
+      std::cout << __DAYS[blockedDay] << std::endl;
       for(unsigned long i = 1; i < row.size(); i=i+2){
         std::cout << getRegularTime(row.at(i)) << "(" << row.at(i+1) << ")" << std::endl;
       }
       std::cout << std::endl;
     }
+    ++blockedDay;
   }
-  std::cout << std::endl;
+  if(!blockedExists){
+    std::cout << "None" << std::endl;
+  }
+
 }
 
+/* convert army time to regular time (00:00-24:00 -> 12:00 AM/PM) */
 inline std::string getRegularTime(const std::string&str){
   int startTimeH, endTimeH, startTimeM, endTimeM;
   startTimeH = std::stoi(str.substr(0, 2));
@@ -533,6 +535,7 @@ inline std::string getRegularTime(const std::string&str){
 
 }
 
+/* convert army time to regular time (00:00-24:00 -> 12:00 AM/PM) */
 inline std::string getRegularTime(int startTimeH, int startTimeM, int endTimeH, int endTimeM){
   bool startAM = true;
   bool endAM = true;
@@ -584,6 +587,7 @@ inline std::string getRegularTime(int startTimeH, int startTimeM, int endTimeH, 
 
 }
 
+/* assign unused classrooms to timeslots */
 inline classroomStatus Solution::assignClassrooms(){
   const unsigned int classListSize = courseList.size();
   for(int day = 0; day < (__Day7Needed ? 7 : 6); ++day){
@@ -647,6 +651,8 @@ inline classroomStatus Solution::assignClassrooms(){
   }
   return classroomStatus{true, 0};
 }
+
+/* erase assigned classrooms from timeslots */
 void Solution::resetAssignedClassrooms() {
   for (int dim = 0; dim < __DimensionCount; ++dim){
     for(int day = 0; day < (__Day7Needed ? 7 : 6); ++day){
@@ -655,4 +661,18 @@ void Solution::resetAssignedClassrooms() {
       }
     }
   }
+}
+
+/* return a list of courses from a specific day */
+inline vector<Course> Solution::extractCoursesFromDay(std::vector<Week> &table, int &day, int &dimensionCount){
+    std::vector<Course> list;
+    for(int dim = 0; dim < dimensionCount; ++dim){
+        for(int slot = 0; slot < TIMESLOTCOUNT; ++slot){
+            // fetch course and skip ahead
+            list.push_back(table.at(dim).t[day][slot].currentCourse);
+            slot = slot + table.at(dim).t[day][slot].currentCourse.examDuration / TIMESLOTDURATION;
+            //std::cout << "SKIPPED SLOT: " << slot << std::endl;
+        }
+    }
+    return list;
 }

@@ -25,8 +25,9 @@
 #define timeColumn 1
 #define commonCourseColumn 2
 
-const std::vector<std::string> __DAYS = {"MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"};
+const std::vector<std::string> __DAYS_UPPERCASE = {"MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"};
 
+/* function prototypes */
 std::vector<Course> loadCourses(const char* path);
 
 std::vector<Classroom> loadClassrooms(const char* path);
@@ -36,30 +37,44 @@ Vector2D<std::string> loadBlockedHours(const char* path);
 std::vector<Course> findConflictingCourses(std::vector<Course> courseList);
 
 int main() {
+  /* load data from given path */
   std::vector<Classroom> classrooms = loadClassrooms(RESOURCES_PATH "classroom2.csv");
-  std::vector<Course> coursesDepartment = loadCourses(RESOURCES_PATH "course-list7.csv");
-  Vector2D<std::string> blockedHours = loadBlockedHours(RESOURCES_PATH "bloc7676ked.csv");
+  std::vector<Course> coursesDepartment = loadCourses(RESOURCES_PATH "course-list6.csv");
+  Vector2D<std::string> blockedHours = loadBlockedHours(RESOURCES_PATH "blocked.csv");
 
   coursesDepartment = findConflictingCourses(coursesDepartment);
 
+  /*
   std::sort(coursesDepartment.begin(), coursesDepartment.end(), [](const Course&c1, const Course&c2) {
     return (strcmp(c1.code.c_str(), c2.code.c_str()) > 0) ? true : false;
   });
+   */
 
-  //Solution solution{coursesCENG, classrooms, blockedHours};
+  /* solve the problem */
   Solution solution{coursesDepartment, classrooms, blockedHours};
-  solution.initializeSchedule();
-  solution.cost(solution.timeTable);
+  solution.Solve();
 
   return 0;
 }
 
 std::vector<Course> loadCourses(const char* path) {
-  CSV courseList{path};
+  CSV courseList;
+  try{
+    CSV c{path}; // check if specified file exists
+    courseList = c;
+  }
+  catch(...){ // throw error if not
+    std::cerr << "Could not load data from " << path << " because it does not exist." << std::endl;
+    exit(1);
+  }
+
+  /* check if header exists and trim it out */
   if (courseList.getData().at(0).at(0) == "STUDENTID") {
     courseList.removeHeader();
   }
+
   std::vector<Course> courses;
+  /* put unique courses into a 2D vector */
   const Vector2D<std::string> uniqueCourses = courseList.filter(codeColumn, [](const std::string&value) {
     static std::unordered_map<std::string, bool> seen;
     if (seen.find(value) == seen.end()) {
@@ -69,6 +84,7 @@ std::vector<Course> loadCourses(const char* path) {
     return false;
   });
 
+  /* construct course objects from provided data */
   for (std::vector<std::string> row: uniqueCourses) {
     const unsigned long studentCount = courseList.filter(codeColumn, row.at(codeColumn)).size();
     courses.emplace_back(row.at(professorColumn), row.at(codeColumn),
@@ -76,6 +92,7 @@ std::vector<Course> loadCourses(const char* path) {
   }
 
 
+  /* add students of each course to a vector */
   for (auto&course : courses) {
     Vector2D<std::string> rows = courseList.filter(codeColumn, course.code);
     for (std::vector<std::string> row: rows) {
@@ -91,17 +108,18 @@ std::vector<Course> loadCourses(const char* path) {
 Vector2D<std::string> loadBlockedHours(const char* path) {
   CSV blockedList;
   try {
-    CSV b{path};
+    CSV b{path}; // check if specified file exists
     blockedList = b;
-  }catch(...){
+  }catch(...){ // if not, assume there are no blocked hours and make an empty vector
     Vector2D<std::string> emptyList;
     for(int i = 0; i < 7; ++i){
       std::vector<std::string> temp;
-      temp.push_back(__DAYS.at(i));
+      temp.push_back(__DAYS_UPPERCASE.at(i));
       emptyList.push_back(temp);
     }
     return emptyList;
   }
+  /* merge repeated days into one object */
   Vector2D<std::string> blockedDays = blockedList.filter(dayColumn, [](const std::string&value) {
     static std::unordered_map<std::string, bool> seen;
     if (seen.find(value) == seen.end()) {
@@ -111,6 +129,7 @@ Vector2D<std::string> loadBlockedHours(const char* path) {
     return false;
   });
 
+  /* discard redundant info */
   const unsigned long dayCount = blockedDays.size();
   for(unsigned long i = 0; i <  dayCount; ++i) {
     //std::string t = blockedDays.at(i).at(blockedDays.at(i).size()-1);
@@ -121,6 +140,7 @@ Vector2D<std::string> loadBlockedHours(const char* path) {
 
   Vector2D<std::string> copy = blockedDays;
 
+  /* convert strings to uppercase effectively making them case-insensitive */
   for(auto&day : blockedDays) {
     transform(day.at(0).begin(), day.at(0).end(), day.at(0).begin(), static_cast<int (*)(int)>(&std::toupper));
     Vector2D<std::string> rows = blockedList.filter(dayColumn, day.at(0));
@@ -135,7 +155,7 @@ Vector2D<std::string> loadBlockedHours(const char* path) {
 
   for(unsigned long i = 0; i < size; ++i) {
     transform(blockedDays.at(i).at(0).begin(), blockedDays.at(i).at(0).end(), blockedDays.at(i).at(0).begin(), static_cast<int (*)(int)>(&std::toupper));
-    if (!(std::find(__DAYS.begin(), __DAYS.end(), blockedDays.at(i).at(0)) != __DAYS.end())){
+    if (!(std::find(__DAYS_UPPERCASE.begin(), __DAYS_UPPERCASE.end(), blockedDays.at(i).at(0)) != __DAYS_UPPERCASE.end())){
       valid.at(i) = false;
     }
   }
@@ -282,13 +302,13 @@ Vector2D<std::string> loadBlockedHours(const char* path) {
   /* Sort days of the week starting from monday and fill in the missing days (if any)*/
   for(unsigned long i = 0; i < 7; ++i){
     for(unsigned long j = 0; j < dayCount; ++j){
-      if(blockedDays.at(j).at(0) == __DAYS.at(i)){
+      if(blockedDays.at(j).at(0) == __DAYS_UPPERCASE.at(i)){
         sortedBlockedDays.push_back(blockedDays.at(j));
         break;
       }
       else if(j+1 == dayCount){
         std::vector<std::string> temp;
-        temp.push_back(__DAYS.at(i));
+        temp.push_back(__DAYS_UPPERCASE.at(i));
         sortedBlockedDays.push_back(temp);
         break;
       }
@@ -303,18 +323,29 @@ Vector2D<std::string> loadBlockedHours(const char* path) {
   }
 
   std::cout << std::endl;
-*/
+
   for(const auto &row : sortedBlockedDays) {
     for(const auto &col : row)
       std::cout << col << " ";
     std::cout << std::endl;
   }
+  */
 
   return sortedBlockedDays;
 }
 
 std::vector<Classroom> loadClassrooms(const char* path) {
-  CSV classroomList{path};
+  CSV classroomList;
+  try{
+    CSV c{path}; // check if file exists
+    classroomList = c;
+  }
+  catch(...){ // throw error if not
+    std::cerr << "Could not load data from " << path << " because it does not exist." << std::endl;
+    exit(1);
+  }
+
+  /* discard header line */
   if (classroomList.getData().at(0).at(0) == "ROOMID") {
     classroomList.removeHeader();
   }

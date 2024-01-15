@@ -30,7 +30,9 @@ endif()
 if(CMAKE_BUILD_TYPE MATCHES "MinSizeRel")
     message("BUILDING MINIMUM SIZE RELEASE!")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DNDEBUG")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Os")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DNDEBUG")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Os")
 endif()
 
 if(CMAKE_BUILD_TYPE MATCHES "Release")
@@ -52,4 +54,3 @@ target_compile_definitions("${CMAKE_PROJECT_NAME}" PUBLIC RESOURCES_PATH="${CMAK
 #target_compile_definitions("${CMAKE_PROJECT_NAME}" PUBLIC RESOURCES_PATH="./res/") # Uncomment this line to setup the ASSETS_PATH macro to the final assets directory when you share the project
 
 target_include_directories("${CMAKE_PROJECT_NAME}" PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include/")
-
