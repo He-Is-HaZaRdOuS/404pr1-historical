@@ -129,7 +129,7 @@ std::vector<Course> loadCourses(const char* path) {
       int s = std::stoi(row.at(idColumn));
       course.studentList.push_back(s);
     }
-    //std::sort(course.studentList.begin(), course.studentList.end());
+    std::sort(course.studentList.begin(), course.studentList.end());
   }
 
   return courses;
