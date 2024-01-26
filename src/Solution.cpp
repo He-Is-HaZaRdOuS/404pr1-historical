@@ -24,53 +24,44 @@ Solution::Solution(vector<Course> list, vector<Classroom> classrooms, Vector2D<s
 
 /* Generates N-many schedules and picks the best one out of the bunch */
 void Solution::Solve(const int nValue) {
-  vector<Week> newSchedule;
   int N = nValue;
   int F = 0;
-  const int LOWER_LIMIT = 10;
-  std::vector<scheduleStatus> schedules;
-  schedules.reserve(N);
+  const int LOWER_LIMIT = N / 2;
+  scheduleStatus minSchedule;
+
+  minSchedule = initializeSchedule();
+  minSchedule.cost = cost(minSchedule.schedule, minSchedule.dim);
 
   for(int n = 0; n < N; ++n){
-      schedules.push_back(initializeSchedule()); // make new random schedule
-      if(schedules.at(n).cost == -2){ // failed to make schedule
-        ++F;
-      }
-      if(N-F < LOWER_LIMIT){ // less than 10 successful schedules out of N
-        N=N+LOWER_LIMIT; // increase N to iterate more
-        std::cout << "Most schedules so far have failed, trying " << LOWER_LIMIT << " more times." << std::endl;
-      }
-      schedules.at(n).cost = cost(schedules.at(n).schedule, schedules.at(n).dim);
-      std::cout << "\rIteration Count: " << n+1 << "/" << N << std::flush;
+    scheduleStatus newSchedule;
+    newSchedule = initializeSchedule(); // make new random schedule
+    if(newSchedule.cost == -2){ // failed to make schedule
+      ++F;
+    }
+    if(N-F < LOWER_LIMIT){
+      N=N+LOWER_LIMIT; // increase N to iterate more
+      std::cout << "Most schedules so far have failed, trying " << LOWER_LIMIT << " more times." << std::endl;
+    }
+    newSchedule.cost = cost(newSchedule.schedule, newSchedule.dim);
+    // both are either 6 days or 7 days
+    if(!(newSchedule.day ^ minSchedule.day)) {
+      if(newSchedule.cost < minSchedule.cost)
+        minSchedule = newSchedule;
+    }
+    // if minSchedule uses 7 days, then newSchedule used only 6, so update the minimum
+    else if(minSchedule.day) {
+        minSchedule = newSchedule;
+    }
+
+    std::cout << "\rIteration Count: " << n+1 << "/" << N << std::flush;
   }
   std::cout << std::endl;
 
-  bool day6exists = false;
-  scheduleStatus min = schedules.at(0);
-  for(int n = 0; n < N; ++n){
-    if(!schedules.at(n).day) {
-      day6exists = true;
-      min = schedules.at(n);
-    }
-  }
-
-  /* find best schedule with minimum cost and days needed */
-  for(int n = 0; n < N; ++n){
-    if(day6exists) {
-      if(schedules.at(n).cost < min.cost && !schedules.at(n).day)
-        min = schedules.at(n);
-    }
-    else {
-      if(schedules.at(n).cost < min.cost)
-        min = schedules.at(n);
-    }
-  }
-
   /* update global variables to those of the best schedule */
-  __DimensionCount = min.dim;
-  __Day7Needed = min.day;
-  __placed = min.placed;
-  timeTable = min.schedule;
+  __DimensionCount = minSchedule.dim;
+  __Day7Needed = minSchedule.day;
+  __placed = minSchedule.placed;
+  timeTable = minSchedule.schedule;
 
     /* assign classrooms to exams */
     classroomStatus returnVal{true, 0};
@@ -167,7 +158,7 @@ printTimeTable(timeTable, blockedHours);
 
     std::cout << "Placed course count: " << placedCount << std::endl;
 
-    std::cout << "Cost: " << min.cost << std::endl;
+    std::cout << "Cost: " << minSchedule.cost << std::endl;
 
     if(checkValidityPrint(timeTable))
       std::cout << "Finished" << std::endl;
@@ -195,7 +186,6 @@ do{
       //std::cout << iterationCount << std::endl;
       ++iterationCount;
       dimensionCount = 1;
-      timeTable.clear();
       // mark all courses as "not placed"
       for (unsigned long i = 0; i < courseCount; ++i) {
         placed.at(i) = false;

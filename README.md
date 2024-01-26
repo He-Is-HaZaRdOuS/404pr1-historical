@@ -37,7 +37,7 @@ Open a terminal window and execute the following commands line by line </br>
 * Then update the System Environment Path Variables to point to the /bin directory of MinGW </br>
 * to verify the compiler is detected, open a powershell window and type 
 ```bash
-"gcc --version" 
+gcc --version
 ```
 
 ## Compilation
