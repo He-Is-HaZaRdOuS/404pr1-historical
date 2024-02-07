@@ -1,6 +1,16 @@
-# 303pr1
-Placeholder repository for CENG303's Term project. </br>
-https://github.com/He-Is-HaZaRdOuS/303pr1
+# 404pr1
+Placeholder repository for CENG404's project. </br>
+https://github.com/He-Is-HaZaRdOuS/404pr1 </br>
+</br>
+Originally derived from [CENG303's Term project](https://github.com/He-Is-HaZaRdOuS/303pr1)
+
+# TODO
+- [ ] Re-write the Solution class to be faster and neater.
+- [ ] Use more C++ STL features
+- [ ] Parallelize any repetitive independent operation wherever possible
+- [ ] Make an interactable GUI 
+- [ ] Implement networking to allow for communication with the outside world
+- [ ] Communicate with outside databases
 
 # Disclaimer!
 CMake does not recognize non-english characters in the build path. </br>
