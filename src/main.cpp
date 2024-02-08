@@ -1,16 +1,17 @@
 #include "main.h"
 
 #include <algorithm>
-#include <Classroom.h>
-#include <Course.h>
 #include <unordered_map>
 #include <fstream>
 #include <cstring>
 #include <iostream>
 #include <array>
 
+#include "Classroom.h"
+#include "Course.h"
 #include "CSV.h"
 #include "Solution.h"
+#include "Timer.h"
 #include "Typedefs.h"
 
 #define idColumn 0
@@ -37,53 +38,55 @@ Vector2D<std::string> loadBlockedHours(const char* path);
 std::vector<Course> findConflictingCourses(std::vector<Course> courseList);
 
 int main(int argc, char **argv) {
-  if (argc == 2 && 0 == strncmp(argv[1],"-h",2)) {
-    std::cout << "N-value: Number of iterations to find optimal schedule." << std::endl;
-    std::cout << "course-list.csv: CSV file containing course lists. " <<
-    "StudentID,Professor Name,CourseID,ExamDuration(in mins)" << std::endl;
-    std::cout << "classrooms.csv: CSV file containing classrooms. (RoomID,Capacity)" << std::endl;
-    std::cout << "blocked.csv: (Optional) CSV file containing blocked hours. " <<
-    "(Day,TimeInterval,Course)" << std::endl;
-    return 0;
+  {
+    Timer timer;
+    if (argc == 2 && 0 == strncmp(argv[1],"-h",2)) {
+      std::cout << "N-value: Number of iterations to find optimal schedule." << std::endl;
+      std::cout << "course-list.csv: CSV file containing course lists. " <<
+      "StudentID,Professor Name,CourseID,ExamDuration(in mins)" << std::endl;
+      std::cout << "classrooms.csv: CSV file containing classrooms. (RoomID,Capacity)" << std::endl;
+      std::cout << "blocked.csv: (Optional) CSV file containing blocked hours. " <<
+      "(Day,TimeInterval,Course)" << std::endl;
+      return 0;
+    }
+    if (argc != 4 && argc != 5) {
+      std::cout << "Usage: (blocked hours are optional)\n"
+                << "./303pr1 <N-value> <course-list.csv> <classrooms.csv> "
+                   "<?blocked.csv>" << std::endl;
+      std::cout << "Run './303pr1 -h' for help" << std::endl;
+      return 1;
+    }
+    const int nValue = std::stoi(argv[1]);
+    std::string f_courseList = argv[2];
+    f_courseList = RESOURCES_PATH + f_courseList;
+    std::string f_classrooms = argv[3];
+    f_classrooms = RESOURCES_PATH + f_classrooms;
+    std::string f_blockedHours;
+    if (argc == 5)
+      f_blockedHours = argv[4];
+    f_blockedHours = RESOURCES_PATH + f_blockedHours;
+
+    std::vector<Classroom> classrooms = loadClassrooms(f_classrooms.c_str());
+    std::vector<Course> coursesDepartment = loadCourses(f_courseList.c_str());
+    Vector2D<std::string> blockedHours = loadBlockedHours(f_blockedHours.c_str());
+
+    coursesDepartment = findConflictingCourses(coursesDepartment);
+
+    /*
+    std::sort(coursesDepartment.begin(), coursesDepartment.end(), [](const Course&c1, const Course&c2) {
+      return (strcmp(c1.code.c_str(), c2.code.c_str()) > 0) ? true : false;
+    });
+     */
+
+    /* solve the problem */
+    Solution solution{coursesDepartment, classrooms, blockedHours};
+    if (nValue <= 0) {
+      std::cout << "Invalid N-value: " << nValue << ", will use 100 instead" << std::endl;
+      solution.Solve(100);
+    } else {
+      solution.Solve(nValue);
+    }
   }
-  if (argc != 4 && argc != 5) {
-    std::cout << "Usage: (blocked hours are optional)\n"
-              << "./303pr1 <N-value> <course-list.csv> <classrooms.csv> "
-                 "<?blocked.csv>" << std::endl;
-    std::cout << "Run './303pr1 -h' for help" << std::endl;
-    return 1;
-  }
-  const int nValue = std::stoi(argv[1]);
-  std::string f_courseList = argv[2];
-  f_courseList = RESOURCES_PATH + f_courseList;
-  std::string f_classrooms = argv[3];
-  f_classrooms = RESOURCES_PATH + f_classrooms;
-  std::string f_blockedHours;
-  if (argc == 5)
-    f_blockedHours = argv[4];
-  f_blockedHours = RESOURCES_PATH + f_blockedHours;
-
-  std::vector<Classroom> classrooms = loadClassrooms(f_classrooms.c_str());
-  std::vector<Course> coursesDepartment = loadCourses(f_courseList.c_str());
-  Vector2D<std::string> blockedHours = loadBlockedHours(f_blockedHours.c_str());
-
-  coursesDepartment = findConflictingCourses(coursesDepartment);
-
-  /*
-  std::sort(coursesDepartment.begin(), coursesDepartment.end(), [](const Course&c1, const Course&c2) {
-    return (strcmp(c1.code.c_str(), c2.code.c_str()) > 0) ? true : false;
-  });
-   */
-
-  /* solve the problem */
-  Solution solution{coursesDepartment, classrooms, blockedHours};
-  if (nValue <= 0) {
-    std::cout << "Invalid N-value: " << nValue << ", will use 100 instead" << std::endl;
-    solution.Solve(100);
-  } else {
-    solution.Solve(nValue);
-  }
-
   return 0;
 }
 

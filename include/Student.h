@@ -1,7 +1,6 @@
 #pragma once
 #ifndef STUDENT_H
 #define STUDENT_H
-#include <vector>
 
 class Student {
 public:
