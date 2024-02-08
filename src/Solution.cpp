@@ -16,10 +16,8 @@ inline std::string getRegularTime(const std::string&str);
 inline std::string getRegularTime(int startTimeH, int startTimeM, int endTimeH, int endTimeM);
 
 /* constructor */
-Solution::Solution(vector<Course> list, vector<Classroom> classrooms, Vector2D<std::string> blockedHours) {
-  this->courseList = list;
-  this->classList = classrooms;
-  this->blockedHours = blockedHours;
+Solution::Solution(const vector<Course>& list, const vector<Classroom>& classrooms, const Vector2D<std::string>& blockedHours)
+  : classList(classrooms), courseList(list), blockedHours(blockedHours) {
 }
 
 /* Generates N-many schedules and picks the best one out of the bunch */
@@ -252,7 +250,7 @@ inline bool Solution::fillTable(std::vector<Week> &schedule, const unsigned long
 
             for(int otherDim = 0; otherDim < (int)dimensionCount; ++otherDim) {
               if(dim != otherDim) {
-                for(std::string& conflict: courseList.at(c).conflictingCourses) {
+                for(std::string_view conflict: courseList.at(c).conflictingCourses) {
                   if(schedule.at(otherDim).t[day][slot+i].currentCourse.code == conflict) {
                     //std::cout << schedule.at(otherDim).t[day][slot].currentCourse.code << std::endl;
                     conflicts = true;
@@ -351,7 +349,7 @@ inline bool Solution::checkValidityPrint(vector<Week> &table) {
 
 /* return an integer representing how bad this schedule is for certain students */
 /* cost is incremented when a student has more than one exam on the same day */
-int Solution::cost(vector<Week> &table, int &dim) {
+int Solution::cost(vector<Week> &table, const int dim) {
     int cost = 0;
 
     for (int day = 0; day < (__Day7Needed ? 7 : 6); ++day) {
@@ -359,8 +357,8 @@ int Solution::cost(vector<Week> &table, int &dim) {
         const unsigned long dayListSize = dayList.size();
         for (unsigned long c1Index = 0; c1Index < dayListSize; ++c1Index) {
             const unsigned long c1SSize = dayList.at(c1Index).studentCount;
-            for (unsigned long s1Index = 0; s1Index < c1SSize; ++s1Index) {
-                for (unsigned long c2Index = c1Index + 1; c2Index < dayListSize; ++c2Index) {
+            for (unsigned long c2Index = c1Index + 1; c2Index < dayListSize; ++c2Index) {
+                for (unsigned long s1Index = 0; s1Index < c1SSize; ++s1Index) {
                     if (std::binary_search(dayList.at(c2Index).studentList.begin(),
                                            dayList.at(c2Index).studentList.end(),
                                            dayList.at(c1Index).studentList.at(s1Index))) {
@@ -669,7 +667,7 @@ void Solution::resetAssignedClassrooms() {
 }
 
 /* return a list of courses from a specific day */
-inline vector<Course> Solution::extractCoursesFromDay(std::vector<Week> &table, int &day, int &dimensionCount){
+inline vector<Course> Solution::extractCoursesFromDay(std::vector<Week> &table, const int day, const int dimensionCount){
     std::vector<Course> list;
     for(int dim = 0; dim < dimensionCount; ++dim){
         for(int slot = 0; slot < TIMESLOTCOUNT; ++slot){

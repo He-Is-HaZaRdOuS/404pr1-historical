@@ -1,7 +1,7 @@
 #include "Student.h"
 
-Student::Student(int id) {
-    this->id = id;
+Student::Student(const int id) : id(id) {
+
 }
 
 Student::~Student() = default;

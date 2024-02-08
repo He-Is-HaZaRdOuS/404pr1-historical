@@ -69,7 +69,7 @@ Vector2D<std::string> CSV::filter(const long column, bool (*filter)(const std::s
 }
 
 
-Vector2D<std::string> CSV::filter(int column, std::string&value) const {
+Vector2D<std::string> CSV::filter(int column, const std::string&value) const {
     auto matches = Vector2D<std::string>(0);
     if (column < 0 || column > m_cols) return matches;
     for (auto&row : m_data) {

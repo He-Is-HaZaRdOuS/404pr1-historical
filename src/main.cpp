@@ -5,7 +5,6 @@
 #include <fstream>
 #include <cstring>
 #include <iostream>
-#include <array>
 
 #include "Classroom.h"
 #include "Course.h"
@@ -117,8 +116,11 @@ std::vector<Course> loadCourses(const char* path) {
     return false;
   });
 
+
   /* construct course objects from provided data */
   for (std::vector<std::string> row: uniqueCourses) {
+    if(!main_global::uniqueCourses.count(row.at(codeColumn)))
+      main_global::uniqueCourses.emplace(row.at(codeColumn), true);
     const unsigned long studentCount = courseList.filter(codeColumn, row.at(codeColumn)).size();
     courses.emplace_back(row.at(professorColumn), row.at(codeColumn),
                          std::stoi(row.at(durationColumn)), studentCount);
@@ -395,29 +397,34 @@ std::vector<Course> findConflictingCourses(std::vector<Course> courseList) {
   for (unsigned long i = 0; i < courseSize; ++i) {
     const unsigned long L1S = courseList.at(i).studentList.size();
     for (unsigned long j = 0; j < courseSize; ++j) {
-      bool skip = false;
       const unsigned long L2S = courseList.at(j).studentList.size();
       if (i != j) {
+        std::string_view sj = main_global::uniqueCourses.find(courseList.at(j).code)->first;
+        std::string_view si = main_global::uniqueCourses.find(courseList.at(i).code)->first;
         if (courseList.at(i).professorName == courseList.at(j).professorName) {
-          courseList.at(i).conflictingCourses.push_back(courseList.at(j).code);
-          courseList.at(j).conflictingCourses.push_back(courseList.at(i).code);
-          skip = true;
+          courseList.at(i).conflictingCourses.emplace_back(sj);
+          courseList.at(j).conflictingCourses.emplace_back(si);
+          //std::cout << courseList.at(i).code << " conflicts with " << courseList.at(j).code << std::endl;
+          continue;
         }
-        for (unsigned long k = 0; !skip && k < L1S; k++) {
-          for (unsigned long l = 0; !skip && l < L2S; l++) {
+        bool skip = false;
+        for (unsigned long k = 0; k < L1S; k++) {
+          for (unsigned long l = 0; l < L2S; l++) {
             if (courseList.at(i).studentList.at(k) == courseList.at(j).studentList.at(l)) {
               const unsigned long L1C = courseList.at(j).conflictingCourses.size();
               for (unsigned long o = 0; o < L1C; ++o) {
                 if (courseList.at(j).conflictingCourses.at(o) == courseList.at(i).code) {
-                  //std::cout << courses.at(j).conflictingCourses.at(o) << " already conflicts with " << courses.at(i).code << std::endl;
+                  //std::cout << courseList.at(j).conflictingCourses.at(o) << " already conflicts with " << courseList.at(i).code << std::endl;
                   skip = true;
                   break;
                 }
               }
-              if (!skip && courseList.at(i).code != courseList.at(j).code) {
-                courseList.at(i).conflictingCourses.push_back(courseList.at(j).code);
-                courseList.at(j).conflictingCourses.push_back(courseList.at(i).code);
-                //std::cout << courses.at(i).code << " conflicts with " << courses.at(j).code << std::endl;
+              if(skip)
+                break;
+              if (courseList.at(i).code != courseList.at(j).code) {
+                courseList.at(i).conflictingCourses.emplace_back(sj);
+                courseList.at(j).conflictingCourses.emplace_back(si);
+                //std::cout << courseList.at(i).code << " conflicts with " << courseList.at(j).code << std::endl;
               }
             }
           }

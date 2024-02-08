@@ -1,13 +1,10 @@
 #include "Course.h"
 
-Course::Course(std::string professorName, std::string code, int examDuration, int studentCount) {
-    this->examDuration = examDuration;
-    this->studentCount = studentCount;
-    this->code = code;
-    this->professorName = professorName;
+Course::Course(const std::string& professorName, const std::string& code, const int examDuration, const int studentCount)
+    : studentCount(studentCount), examDuration(examDuration), professorName(professorName), code(code) {
 }
 
-Course::Course() = default;
+
 
 Course::~Course() {
 

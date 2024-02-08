@@ -54,16 +54,16 @@ public:
 
     void Solve(int nValue);
     inline scheduleStatus initializeSchedule();
-    int cost(vector<Week> &table, int &dim);
+    int cost(vector<Week> &table, int dim);
     inline bool fillTable(std::vector<Week> &schedule, unsigned long courseCount, std::vector<bool> &placed, int &dimensionCount, bool day7Needed);
     static inline bool checkValidityPrint(vector<Week> &table);
     inline void setBlockedHours(std::vector<Week> &schedule, Vector2D<std::string> blockedHours, int dim);
     inline std::vector<Classroom> getAvailableClassrooms(int day, int start, int end);
     inline classroomStatus assignClassrooms();
     inline void resetAssignedClassrooms();
-    static inline vector<Course> extractCoursesFromDay(std::vector<Week> &table, int &day, int &dim);
+    static inline vector<Course> extractCoursesFromDay(std::vector<Week> &table, int day, int dim);
 
-    explicit Solution(vector<Course> list, vector<Classroom> classrooms, Vector2D<std::string> blockedHours);
+    explicit Solution(const vector<Course>& list, const vector<Classroom>& classrooms, const Vector2D<std::string>& blockedHours);
 };
 
 #endif //SOLUTION_H
