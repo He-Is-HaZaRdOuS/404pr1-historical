@@ -191,8 +191,8 @@ do{
       /* shuffle vectors and try again */
       auto rd = std::random_device {};
       auto rng = std::default_random_engine { rd() };
-      std::shuffle(std::begin(courseList), std::end(courseList), rng);
-      std::shuffle(std::begin(placed), std::end(placed), rng);
+      //std::shuffle(std::begin(courseList), std::end(courseList), rng);
+      //std::shuffle(std::begin(placed), std::end(placed), rng);
     }
     /* invoke algorithm */
     isFilled = fillTable(schedule, courseCount, placed, dimensionCount, day7Needed);
@@ -353,13 +353,13 @@ int Solution::cost(vector<Week> &table, int dim) {
     std::vector<Course> dayList = extractCoursesFromDay(table, day, dim);
     const unsigned long dayListSize = dayList.size();
     for (unsigned long c1Index = 0; c1Index < dayListSize; ++c1Index) {
-      const unsigned long c1SSize = dayList.at(c1Index).studentCount;
-      for (unsigned long s1Index = 0; s1Index < c1SSize; ++s1Index) {
-        for (unsigned long c2Index = c1Index + 1; c2Index < dayListSize; ++c2Index) {
-          if (std::binary_search(dayList.at(c2Index).studentList.begin(),
-                                 dayList.at(c2Index).studentList.end(),
-                                 dayList.at(c1Index).studentList.at(s1Index))) {
-            ++cost;
+      for (unsigned long c2Index = c1Index + 1; c2Index < dayListSize; ++c2Index) {
+        const unsigned long c2SSize = dayList.at(c2Index).studentCount;
+        for (unsigned long s2Index = 0; s2Index < c2SSize; ++s2Index) {
+            if (std::binary_search(dayList.at(c1Index).studentList.begin(),
+                                   dayList.at(c1Index).studentList.end(),
+                                   dayList.at(c2Index).studentList.at(s2Index))) {
+              ++cost;
                                  }
         }
 

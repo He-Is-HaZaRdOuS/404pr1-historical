@@ -102,6 +102,7 @@ std::vector<Course> loadCourses(const char* path) {
     const unsigned long studentCount = courseList.filter(codeColumn, row.at(codeColumn)).size();
     courses.emplace_back(Main::uniqueProfessors.find(row.at(professorColumn))->first, row.at(codeColumn),
                          std::stoi(row.at(durationColumn)), studentCount);
+    courses.back().studentList.reserve(studentCount);
   }
 
 
@@ -358,7 +359,6 @@ Vector2D<std::string> loadBlockedHours(const char* path) {
 std::vector<Course> findConflictingCourses(std::vector<Course> courseList) {
   const unsigned long courseSize = courseList.size();
   for (unsigned long i = 0; i < courseSize; ++i) {
-    const unsigned long L1S = courseList.at(i).studentList.size();
     for (unsigned long j = i + 1; j < courseSize; ++j) {
       const unsigned long L2S = courseList.at(j).studentList.size();
       std::string_view sj = Main::uniqueCourses.find(courseList.at(j).code)->first;
@@ -371,16 +371,17 @@ std::vector<Course> findConflictingCourses(std::vector<Course> courseList) {
       if (courseList.at(j).conflictingCourses.count(courseList.at(i).code)) {
         break;
       }
-      for (unsigned long k = 0; k < L1S; k++) {
-        for (unsigned long l = 0; l < L2S; l++) {
-          if (courseList.at(i).studentList.at(k) == courseList.at(j).studentList.at(l)) {
-            if (courseList.at(i).code != courseList.at(j).code) {
-              courseList.at(i).conflictingCourses[sj] = true;
-              courseList.at(j).conflictingCourses[si] = true;
-            }
+      for (unsigned long l = 0; l < L2S; l++) {
+        if (std::binary_search(courseList.at(i).studentList.begin(),
+                                   courseList.at(i).studentList.end(),
+                                   courseList.at(j).studentList.at(l))) {
+          if (courseList.at(i).code != courseList.at(j).code) {
+            courseList.at(i).conflictingCourses[sj] = true;
+            courseList.at(j).conflictingCourses[si] = true;
           }
         }
       }
+
     }
   }
   return courseList;
