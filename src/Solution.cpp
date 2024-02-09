@@ -191,8 +191,8 @@ do{
       /* shuffle vectors and try again */
       auto rd = std::random_device {};
       auto rng = std::default_random_engine { rd() };
-      //std::shuffle(std::begin(courseList), std::end(courseList), rng);
-      //std::shuffle(std::begin(placed), std::end(placed), rng);
+      std::shuffle(std::begin(courseList), std::end(courseList), rng);
+      std::shuffle(std::begin(placed), std::end(placed), rng);
     }
     /* invoke algorithm */
     isFilled = fillTable(schedule, courseCount, placed, dimensionCount, day7Needed);
