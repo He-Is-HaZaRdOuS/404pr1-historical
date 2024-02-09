@@ -5,6 +5,7 @@
 #include "Classroom.h"
 #include "Typedefs.h"
 
+#include <unordered_map>
 
 class Course {
 public:
@@ -12,10 +13,10 @@ public:
     ~Course();
     int studentCount;
     int examDuration;
-    std::string professorName;
+    std::string_view professorName;
     std::string code;
     std::vector<int> studentList;
-    std::vector<std::string_view> conflictingCourses;
+    std::unordered_map<std::string_view, bool> conflictingCourses;
     std::vector<Classroom> classrooms;
 };
 

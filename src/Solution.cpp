@@ -250,14 +250,13 @@ inline bool Solution::fillTable(std::vector<Week> &schedule, const unsigned long
 
             for(int otherDim = 0; otherDim < (int)dimensionCount; ++otherDim) {
               if(dim != otherDim) {
-                for(std::string_view conflict: courseList.at(c).conflictingCourses) {
-                  if(schedule.at(otherDim).t[day][slot+i].currentCourse.code == conflict) {
-                    //std::cout << schedule.at(otherDim).t[day][slot].currentCourse.code << std::endl;
-                    conflicts = true;
-                    break;
-                  }
+                if(courseList.at(c).conflictingCourses.count(schedule.at(otherDim).t[day][slot+i].currentCourse.code)) {
+                  //std::cout << schedule.at(otherDim).t[day][slot].currentCourse.code << std::endl;
+                  conflicts = true;
+                  break;
                 }
-                  if(schedule.at(otherDim).t[day][slot+i].currentCourse.professorName == schedule.at(dim).t[day][slot+i].currentCourse.professorName){
+
+                  if(schedule.at(otherDim).t[day][slot+i].currentCourse.professorName.compare(schedule.at(dim).t[day][slot+i].currentCourse.professorName) == 0){
                     sameProfessor = true;
                     break;
                 }
@@ -331,15 +330,13 @@ inline bool Solution::checkValidityPrint(vector<Week> &table) {
         for (int day = 0; day < (__Day7Needed ? 7 : 6); day++) {
             for (int slot = 0; slot < TIMESLOTCOUNT; ++slot) {
                 const unsigned long conflictSize = table.at(dim).t[day][slot].currentCourse.conflictingCourses.size();
-                for(unsigned long cSize = 0; cSize < conflictSize; ++cSize) {
-                    for(int otherDim = 0; otherDim < __DimensionCount; ++otherDim) {
-                        if(dim != otherDim && table.at(otherDim).t[day][slot].status == OCCUPIED && table.at(dim).t[day][slot].status == OCCUPIED)
-                        if(table.at(otherDim).t[day][slot].currentCourse.code == table.at(dim).t[day][slot].currentCourse.conflictingCourses.at(cSize)) {
-                            std::cout << "ILLEGAL " << table.at(otherDim).t[day][slot].currentCourse.code << " conflicts with " << table.at(dim).t[day][slot].currentCourse.conflictingCourses.at(cSize) << std::endl;
-                            t = false;
-                        }
-                    }
-                }
+                  for(int otherDim = 0; otherDim < __DimensionCount; ++otherDim) {
+                      if(dim != otherDim && table.at(otherDim).t[day][slot].status == OCCUPIED && table.at(dim).t[day][slot].status == OCCUPIED)
+                      if(table.at(dim).t[day][slot].currentCourse.conflictingCourses.count(table.at(otherDim).t[day][slot].currentCourse.code)) {
+                          std::cout << "ILLEGAL " << table.at(otherDim).t[day][slot].currentCourse.code << " conflicts with " << table.at(dim).t[day][slot].currentCourse.conflictingCourses.find(table.at(otherDim).t[day][slot].currentCourse.code)->first << std::endl;
+                          t = false;
+                      }
+                  }
             }
         }
     }
@@ -349,28 +346,28 @@ inline bool Solution::checkValidityPrint(vector<Week> &table) {
 
 /* return an integer representing how bad this schedule is for certain students */
 /* cost is incremented when a student has more than one exam on the same day */
-int Solution::cost(vector<Week> &table, const int dim) {
-    int cost = 0;
+int Solution::cost(vector<Week> &table, int dim) {
+  int cost = 0;
 
-    for (int day = 0; day < (__Day7Needed ? 7 : 6); ++day) {
-        std::vector<Course> dayList = extractCoursesFromDay(table, day, dim);
-        const unsigned long dayListSize = dayList.size();
-        for (unsigned long c1Index = 0; c1Index < dayListSize; ++c1Index) {
-            const unsigned long c1SSize = dayList.at(c1Index).studentCount;
-            for (unsigned long c2Index = c1Index + 1; c2Index < dayListSize; ++c2Index) {
-                for (unsigned long s1Index = 0; s1Index < c1SSize; ++s1Index) {
-                    if (std::binary_search(dayList.at(c2Index).studentList.begin(),
-                                           dayList.at(c2Index).studentList.end(),
-                                           dayList.at(c1Index).studentList.at(s1Index))) {
-                        ++cost;
-                    }
-                }
-
-            }
-
+  for (int day = 0; day < (__Day7Needed ? 7 : 6); ++day) {
+    std::vector<Course> dayList = extractCoursesFromDay(table, day, dim);
+    const unsigned long dayListSize = dayList.size();
+    for (unsigned long c1Index = 0; c1Index < dayListSize; ++c1Index) {
+      const unsigned long c1SSize = dayList.at(c1Index).studentCount;
+      for (unsigned long s1Index = 0; s1Index < c1SSize; ++s1Index) {
+        for (unsigned long c2Index = c1Index + 1; c2Index < dayListSize; ++c2Index) {
+          if (std::binary_search(dayList.at(c2Index).studentList.begin(),
+                                 dayList.at(c2Index).studentList.end(),
+                                 dayList.at(c1Index).studentList.at(s1Index))) {
+            ++cost;
+                                 }
         }
 
+      }
+
     }
+
+  }
 
   return cost;
 }

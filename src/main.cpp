@@ -1,31 +1,11 @@
 #include "main.h"
 
-#include <algorithm>
-#include <unordered_map>
-#include <fstream>
-#include <cstring>
-#include <iostream>
-
 #include "Classroom.h"
 #include "Course.h"
 #include "CSV.h"
 #include "Solution.h"
 #include "Timer.h"
 #include "Typedefs.h"
-
-#define idColumn 0
-
-#define capacityColumn 1
-
-#define professorColumn 1
-#define codeColumn 2
-#define durationColumn 3
-
-#define dayColumn 0
-#define timeColumn 1
-#define commonCourseColumn 2
-
-const std::vector<std::string> __DAYS_UPPERCASE = {"MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"};
 
 /* function prototypes */
 std::vector<Course> loadCourses(const char* path);
@@ -36,8 +16,10 @@ Vector2D<std::string> loadBlockedHours(const char* path);
 
 std::vector<Course> findConflictingCourses(std::vector<Course> courseList);
 
-int main(int argc, char **argv) {
+int main(const int argc, char **argv) {
+  /* inner-scope begin */
   {
+    /* start timer */
     Timer timer;
     if (argc == 2 && 0 == strncmp(argv[1],"-h",2)) {
       std::cout << "N-value: Number of iterations to find optimal schedule." << std::endl;
@@ -65,17 +47,11 @@ int main(int argc, char **argv) {
       f_blockedHours = argv[4];
     f_blockedHours = RESOURCES_PATH + f_blockedHours;
 
-    std::vector<Classroom> classrooms = loadClassrooms(f_classrooms.c_str());
+    const std::vector<Classroom> classrooms = loadClassrooms(f_classrooms.c_str());
     std::vector<Course> coursesDepartment = loadCourses(f_courseList.c_str());
-    Vector2D<std::string> blockedHours = loadBlockedHours(f_blockedHours.c_str());
+    const Vector2D<std::string> blockedHours = loadBlockedHours(f_blockedHours.c_str());
 
     coursesDepartment = findConflictingCourses(coursesDepartment);
-
-    /*
-    std::sort(coursesDepartment.begin(), coursesDepartment.end(), [](const Course&c1, const Course&c2) {
-      return (strcmp(c1.code.c_str(), c2.code.c_str()) > 0) ? true : false;
-    });
-     */
 
     /* solve the problem */
     Solution solution{coursesDepartment, classrooms, blockedHours};
@@ -85,14 +61,14 @@ int main(int argc, char **argv) {
     } else {
       solution.Solve(nValue);
     }
-  }
+  } /* inner-scope end */
   return 0;
 }
 
 std::vector<Course> loadCourses(const char* path) {
   CSV courseList;
   try{
-    CSV c{path}; // check if specified file exists
+    const CSV c{path}; // check if specified file exists
     courseList = c;
   }
   catch(...){ // throw error if not
@@ -107,7 +83,7 @@ std::vector<Course> loadCourses(const char* path) {
 
   std::vector<Course> courses;
   /* put unique courses into a 2D vector */
-  const Vector2D<std::string> uniqueCourses = courseList.filter(codeColumn, [](const std::string&value) {
+  const Vector2D<std::string> uniqueCourses = courseList.filter(codeColumn, [](const std::string& value) {
     static std::unordered_map<std::string, bool> seen;
     if (seen.find(value) == seen.end()) {
       seen.emplace(value, true);
@@ -119,10 +95,12 @@ std::vector<Course> loadCourses(const char* path) {
 
   /* construct course objects from provided data */
   for (std::vector<std::string> row: uniqueCourses) {
-    if(!main_global::uniqueCourses.count(row.at(codeColumn)))
-      main_global::uniqueCourses.emplace(row.at(codeColumn), true);
+    if(!Main::uniqueCourses.count(row.at(codeColumn)))
+      Main::uniqueCourses.emplace(row.at(codeColumn), true);
+    if(!Main::uniqueProfessors.count(row.at(professorColumn)))
+      Main::uniqueProfessors.emplace(row.at(professorColumn), true);
     const unsigned long studentCount = courseList.filter(codeColumn, row.at(codeColumn)).size();
-    courses.emplace_back(row.at(professorColumn), row.at(codeColumn),
+    courses.emplace_back(Main::uniqueProfessors.find(row.at(professorColumn))->first, row.at(codeColumn),
                          std::stoi(row.at(durationColumn)), studentCount);
   }
 
@@ -131,8 +109,7 @@ std::vector<Course> loadCourses(const char* path) {
   for (auto&course : courses) {
     Vector2D<std::string> rows = courseList.filter(codeColumn, course.code);
     for (std::vector<std::string> row: rows) {
-      int s = std::stoi(row.at(idColumn));
-      course.studentList.push_back(s);
+      course.studentList.emplace_back(std::stoi(row.at(idColumn)));
     }
     std::sort(course.studentList.begin(), course.studentList.end());
   }
@@ -140,20 +117,44 @@ std::vector<Course> loadCourses(const char* path) {
   return courses;
 }
 
+std::vector<Classroom> loadClassrooms(const char* path) {
+  CSV classroomList;
+  try{
+    const CSV c{path}; // check if file exists
+    classroomList = c;
+  }
+  catch(...){ // throw error if not
+    std::cerr << "Could not load data from " << path << " because it does not exist." << std::endl;
+    exit(1);
+  }
+
+  /* discard header line */
+  if (classroomList.getData().at(0).at(0) == "ROOMID") {
+    classroomList.removeHeader();
+  }
+  std::vector<Classroom> classrooms;
+  for (std::vector<std::string> row: classroomList.getData()) {
+    classrooms.emplace_back(std::stoi(row.at(capacityColumn)), row.at(idColumn));
+  }
+
+  return classrooms;
+}
+
 Vector2D<std::string> loadBlockedHours(const char* path) {
   CSV blockedList;
   try {
-    CSV b{path}; // check if specified file exists
+    const CSV b{path}; // check if specified file exists
     blockedList = b;
   }catch(...){ // if not, assume there are no blocked hours and make an empty vector
     Vector2D<std::string> emptyList;
     for(int i = 0; i < 7; ++i){
       std::vector<std::string> temp;
-      temp.push_back(__DAYS_UPPERCASE.at(i));
-      emptyList.push_back(temp);
+      temp.emplace_back(Main::DAYS_UPPERCASE.at(i));
+      emptyList.emplace_back(temp);
     }
     return emptyList;
   }
+
   /* merge repeated days into one object */
   Vector2D<std::string> blockedDays = blockedList.filter(dayColumn, [](const std::string&value) {
     static std::unordered_map<std::string, bool> seen;
@@ -167,10 +168,8 @@ Vector2D<std::string> loadBlockedHours(const char* path) {
   /* discard redundant info */
   const unsigned long dayCount = blockedDays.size();
   for(unsigned long i = 0; i <  dayCount; ++i) {
-    //std::string t = blockedDays.at(i).at(blockedDays.at(i).size()-1);
     blockedDays.at(i).pop_back();
     blockedDays.at(i).pop_back();
-    //blockedDays.at(i).push_back(t);
   }
 
   Vector2D<std::string> copy = blockedDays;
@@ -180,19 +179,23 @@ Vector2D<std::string> loadBlockedHours(const char* path) {
     transform(day.at(0).begin(), day.at(0).end(), day.at(0).begin(), static_cast<int (*)(int)>(&std::toupper));
     Vector2D<std::string> rows = blockedList.filter(dayColumn, day.at(0));
     for(std::vector<std::string> row : rows) {
-      day.push_back(row.at(timeColumn));
-      day.push_back(row.at(commonCourseColumn));
+      day.emplace_back(row.at(timeColumn));
+      day.emplace_back(row.at(commonCourseColumn));
     }
   }
 
   const unsigned long size = blockedDays.size();
-  std::vector<bool> valid(size, true);
+  std::vector<bool> valid;
+  valid.reserve(7);
 
+  /* check if any invalid days exist */
   for(unsigned long i = 0; i < size; ++i) {
     transform(blockedDays.at(i).at(0).begin(), blockedDays.at(i).at(0).end(), blockedDays.at(i).at(0).begin(), static_cast<int (*)(int)>(&std::toupper));
-    if (!(std::find(__DAYS_UPPERCASE.begin(), __DAYS_UPPERCASE.end(), blockedDays.at(i).at(0)) != __DAYS_UPPERCASE.end())){
-      valid.at(i) = false;
+    if (std::find(Main::DAYS_UPPERCASE.begin(), Main::DAYS_UPPERCASE.end(),
+                  blockedDays.at(i).at(0)) == Main::DAYS_UPPERCASE.end()){
+      valid.emplace_back() = false;
     }
+    valid.emplace_back(true);
   }
 
   bool shouldExit = false;
@@ -276,7 +279,7 @@ Vector2D<std::string> loadBlockedHours(const char* path) {
                 std::cerr << std::endl << "Timing error in " << day.at(0) << "; Start time should not be earlier than 09:00." << std::endl;
                 exit(1);
               }
-              if(endTimeSlot2 > 107){
+              if(endTimeSlot2 > TIMESLOTCOUNT - 1){
                 std::cerr << std::endl << "Timing error in " << day.at(0) << "; End time should not be later than 18:00." << std::endl;
                 exit(1);
               }
@@ -310,7 +313,6 @@ Vector2D<std::string> loadBlockedHours(const char* path) {
 
         startTimeSlot = ((stoi(startTimeH) - 9) * 60 + stoi(startTimeM)) / TIMESLOTDURATION;
         endTimeSlot = (((stoi(endTimeH) - 9) * 60 + stoi(endTimeM))/ TIMESLOTDURATION) - 1;
-        //std::cout << startTimeSlot1 << " " << endTimeSlot1;
 
         if(endTimeSlot < startTimeSlot){
           std::cerr << "Input error in: " << day.at(0) << "; End time cannot be equal or less than Start time." << std::endl;
@@ -337,101 +339,49 @@ Vector2D<std::string> loadBlockedHours(const char* path) {
   /* Sort days of the week starting from monday and fill in the missing days (if any)*/
   for(unsigned long i = 0; i < 7; ++i){
     for(unsigned long j = 0; j < dayCount; ++j){
-      if(blockedDays.at(j).at(0) == __DAYS_UPPERCASE.at(i)){
-        sortedBlockedDays.push_back(blockedDays.at(j));
+      if(blockedDays.at(j).at(0) == Main::DAYS_UPPERCASE.at(i)){
+        sortedBlockedDays.emplace_back(blockedDays.at(j));
         break;
       }
-      else if(j+1 == dayCount){
+      if(j+1 == dayCount){
         std::vector<std::string> temp;
-        temp.push_back(__DAYS_UPPERCASE.at(i));
-        sortedBlockedDays.push_back(temp);
+        temp.emplace_back(Main::DAYS_UPPERCASE.at(i));
+        sortedBlockedDays.emplace_back(temp);
         break;
       }
     }
   }
 
-/*
-  for(const auto &row : blockedDays) {
-    for(const auto &col : row)
-      std::cout << col << " ";
-    std::cout << std::endl;
-  }
-
-  std::cout << std::endl;
-
-  for(const auto &row : sortedBlockedDays) {
-    for(const auto &col : row)
-      std::cout << col << " ";
-    std::cout << std::endl;
-  }
-  */
-
   return sortedBlockedDays;
-}
-
-std::vector<Classroom> loadClassrooms(const char* path) {
-  CSV classroomList;
-  try{
-    CSV c{path}; // check if file exists
-    classroomList = c;
-  }
-  catch(...){ // throw error if not
-    std::cerr << "Could not load data from " << path << " because it does not exist." << std::endl;
-    exit(1);
-  }
-
-  /* discard header line */
-  if (classroomList.getData().at(0).at(0) == "ROOMID") {
-    classroomList.removeHeader();
-  }
-  std::vector<Classroom> classrooms;
-  for (std::vector<std::string> row: classroomList.getData()) {
-    classrooms.emplace_back(std::stoi(row.at(capacityColumn)), row.at(idColumn));
-  }
-
-  return classrooms;
 }
 
 std::vector<Course> findConflictingCourses(std::vector<Course> courseList) {
   const unsigned long courseSize = courseList.size();
   for (unsigned long i = 0; i < courseSize; ++i) {
     const unsigned long L1S = courseList.at(i).studentList.size();
-    for (unsigned long j = 0; j < courseSize; ++j) {
+    for (unsigned long j = i + 1; j < courseSize; ++j) {
       const unsigned long L2S = courseList.at(j).studentList.size();
-      if (i != j) {
-        std::string_view sj = main_global::uniqueCourses.find(courseList.at(j).code)->first;
-        std::string_view si = main_global::uniqueCourses.find(courseList.at(i).code)->first;
-        if (courseList.at(i).professorName == courseList.at(j).professorName) {
-          courseList.at(i).conflictingCourses.emplace_back(sj);
-          courseList.at(j).conflictingCourses.emplace_back(si);
-          //std::cout << courseList.at(i).code << " conflicts with " << courseList.at(j).code << std::endl;
-          continue;
-        }
-        bool skip = false;
-        for (unsigned long k = 0; k < L1S; k++) {
-          for (unsigned long l = 0; l < L2S; l++) {
-            if (courseList.at(i).studentList.at(k) == courseList.at(j).studentList.at(l)) {
-              const unsigned long L1C = courseList.at(j).conflictingCourses.size();
-              for (unsigned long o = 0; o < L1C; ++o) {
-                if (courseList.at(j).conflictingCourses.at(o) == courseList.at(i).code) {
-                  //std::cout << courseList.at(j).conflictingCourses.at(o) << " already conflicts with " << courseList.at(i).code << std::endl;
-                  skip = true;
-                  break;
-                }
-              }
-              if(skip)
-                break;
-              if (courseList.at(i).code != courseList.at(j).code) {
-                courseList.at(i).conflictingCourses.emplace_back(sj);
-                courseList.at(j).conflictingCourses.emplace_back(si);
-                //std::cout << courseList.at(i).code << " conflicts with " << courseList.at(j).code << std::endl;
-              }
+      std::string_view sj = Main::uniqueCourses.find(courseList.at(j).code)->first;
+      std::string_view si = Main::uniqueCourses.find(courseList.at(i).code)->first;
+      if (courseList.at(i).professorName.compare(courseList.at(j).professorName) == 0) {
+        courseList.at(i).conflictingCourses[sj] = true;
+        courseList.at(j).conflictingCourses[si] = true;
+        continue;
+      }
+      if (courseList.at(j).conflictingCourses.count(courseList.at(i).code)) {
+        break;
+      }
+      for (unsigned long k = 0; k < L1S; k++) {
+        for (unsigned long l = 0; l < L2S; l++) {
+          if (courseList.at(i).studentList.at(k) == courseList.at(j).studentList.at(l)) {
+            if (courseList.at(i).code != courseList.at(j).code) {
+              courseList.at(i).conflictingCourses[sj] = true;
+              courseList.at(j).conflictingCourses[si] = true;
             }
           }
         }
       }
     }
-    std::sort(courseList.at(i).conflictingCourses.begin(), courseList.at(i).conflictingCourses.end());
   }
   return courseList;
 }
