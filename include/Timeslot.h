@@ -4,14 +4,17 @@
 
 #include "Course.h"
 
-typedef enum TimeSlotStatus {AVAILABLE,OCCUPIED,BLOCKED} TimeSlotStatus;
+namespace n_Timeslot {
+    typedef enum TimeSlotStatus {AVAILABLE,OCCUPIED,BLOCKED} TimeSlotStatus;
+}
+
 
 class Timeslot {
 public:
     Timeslot();
     ~Timeslot();
-    Course currentCourse;
-    TimeSlotStatus status;
+    Course m_currentCourse;
+    n_Timeslot::TimeSlotStatus m_status;
 };
 
 

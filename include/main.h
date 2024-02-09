@@ -22,7 +22,7 @@
 #define timeColumn 1 // blocked
 #define commonCourseColumn 2 // blocked
 
-namespace Main {
+namespace n_Main {
   const std::vector<std::string> DAYS_UPPERCASE = {"MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"};
   inline std::unordered_map<std::string, bool> uniqueCourses;
   inline std::unordered_map<std::string, bool> uniqueProfessors;

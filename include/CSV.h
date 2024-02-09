@@ -6,13 +6,14 @@
 #include <string>
 
 class CSV {
+private:
     Vector2D<std::string> m_data;
     long m_rows;
     long m_cols;
 
 public:
     explicit CSV(const char* path, char separator = ',');
-    CSV();
+    CSV() = default;
 
   void printRows(const std::string&separator = ",") const;
 

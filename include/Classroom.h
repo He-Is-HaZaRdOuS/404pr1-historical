@@ -7,10 +7,12 @@
 class Classroom {
 public:
     explicit Classroom(int capacity, const std::string& id);
-    Classroom();
-    ~Classroom();
-    int capacity;
-    std::string id;
+    ~Classroom() = default;
+    int32_t m_capacity;
+    std::string m_id;
+
+private:
+    Classroom() = default;
 };
 
 

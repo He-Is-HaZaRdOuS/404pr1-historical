@@ -95,24 +95,24 @@ std::vector<Course> loadCourses(const char* path) {
 
   /* construct course objects from provided data */
   for (std::vector<std::string> row: uniqueCourses) {
-    if(!Main::uniqueCourses.count(row.at(codeColumn)))
-      Main::uniqueCourses.emplace(row.at(codeColumn), true);
-    if(!Main::uniqueProfessors.count(row.at(professorColumn)))
-      Main::uniqueProfessors.emplace(row.at(professorColumn), true);
+    if(!n_Main::uniqueCourses.count(row.at(codeColumn)))
+      n_Main::uniqueCourses.emplace(row.at(codeColumn), true);
+    if(!n_Main::uniqueProfessors.count(row.at(professorColumn)))
+      n_Main::uniqueProfessors.emplace(row.at(professorColumn), true);
     const unsigned long studentCount = courseList.filter(codeColumn, row.at(codeColumn)).size();
-    courses.emplace_back(Main::uniqueProfessors.find(row.at(professorColumn))->first, row.at(codeColumn),
+    courses.emplace_back(n_Main::uniqueProfessors.find(row.at(professorColumn))->first, row.at(codeColumn),
                          std::stoi(row.at(durationColumn)), studentCount);
-    courses.back().studentList.reserve(studentCount);
+    courses.back().m_studentList.reserve(studentCount);
   }
 
 
   /* add students of each course to a vector */
   for (auto&course : courses) {
-    Vector2D<std::string> rows = courseList.filter(codeColumn, course.code);
+    Vector2D<std::string> rows = courseList.filter(codeColumn, course.m_code);
     for (std::vector<std::string> row: rows) {
-      course.studentList.emplace_back(std::stoi(row.at(idColumn)));
+      course.m_studentList.emplace_back(std::stoi(row.at(idColumn)));
     }
-    std::sort(course.studentList.begin(), course.studentList.end());
+    std::sort(course.m_studentList.begin(), course.m_studentList.end());
   }
 
   return courses;
@@ -148,9 +148,9 @@ Vector2D<std::string> loadBlockedHours(const char* path) {
     blockedList = b;
   }catch(...){ // if not, assume there are no blocked hours and make an empty vector
     Vector2D<std::string> emptyList;
-    for(int i = 0; i < 7; ++i){
+    for(int dayIndex = 0; dayIndex < 7; ++dayIndex){
       std::vector<std::string> temp;
-      temp.emplace_back(Main::DAYS_UPPERCASE.at(i));
+      temp.emplace_back(n_Main::DAYS_UPPERCASE.at(dayIndex));
       emptyList.emplace_back(temp);
     }
     return emptyList;
@@ -168,9 +168,9 @@ Vector2D<std::string> loadBlockedHours(const char* path) {
 
   /* discard redundant info */
   const unsigned long dayCount = blockedDays.size();
-  for(unsigned long i = 0; i <  dayCount; ++i) {
-    blockedDays.at(i).pop_back();
-    blockedDays.at(i).pop_back();
+  for(unsigned long dayIndex = 0; dayIndex <  dayCount; ++dayIndex) {
+    blockedDays.at(dayIndex).pop_back();
+    blockedDays.at(dayIndex).pop_back();
   }
 
   Vector2D<std::string> copy = blockedDays;
@@ -190,20 +190,20 @@ Vector2D<std::string> loadBlockedHours(const char* path) {
   valid.reserve(7);
 
   /* check if any invalid days exist */
-  for(unsigned long i = 0; i < size; ++i) {
-    transform(blockedDays.at(i).at(0).begin(), blockedDays.at(i).at(0).end(), blockedDays.at(i).at(0).begin(), static_cast<int (*)(int)>(&std::toupper));
-    if (std::find(Main::DAYS_UPPERCASE.begin(), Main::DAYS_UPPERCASE.end(),
-                  blockedDays.at(i).at(0)) == Main::DAYS_UPPERCASE.end()){
+  for(unsigned long dayIndex = 0; dayIndex < size; ++dayIndex) {
+    transform(blockedDays.at(dayIndex).at(0).begin(), blockedDays.at(dayIndex).at(0).end(), blockedDays.at(dayIndex).at(0).begin(), static_cast<int (*)(int)>(&std::toupper));
+    if (std::find(n_Main::DAYS_UPPERCASE.begin(), n_Main::DAYS_UPPERCASE.end(),
+                  blockedDays.at(dayIndex).at(0)) == n_Main::DAYS_UPPERCASE.end()){
       valid.emplace_back() = false;
     }
     valid.emplace_back(true);
   }
 
   bool shouldExit = false;
-  for(unsigned long i = 0; i < size; ++i){
-    if(!valid.at(i)){
+  for(unsigned long dayIndex = 0; dayIndex < size; ++dayIndex){
+    if(!valid.at(dayIndex)){
       shouldExit = true;
-      std::cerr << "Input error: " << copy.at(i).at(0) << " is not a day of the week" << std::endl;
+      std::cerr << "Input error: " << copy.at(dayIndex).at(0) << " is not a day of the week" << std::endl;
     }
   }
 
@@ -217,76 +217,76 @@ Vector2D<std::string> loadBlockedHours(const char* path) {
   for(auto&day : blockedDays) {
     const unsigned long daySize = day.size();
     if(daySize > 3){
-      for(unsigned long i = 1; i < daySize; i=i+2){
+      for(unsigned long interval0 = 1; interval0 < daySize; interval0=interval0+2){
         std::string startTimeH1, endTimeH1, startTimeM1, endTimeM1;
         int startTimeSlot1, endTimeSlot1;
         try{
-          startTimeH1 = day.at(i).substr(0, 2);
-          startTimeM1 = day.at(i).substr(3, 2);
-          endTimeH1 = day.at(i).substr(6, 2);
-          endTimeM1 = day.at(i).substr(9, 2);
+          startTimeH1 = day.at(interval0).substr(0, 2);
+          startTimeM1 = day.at(interval0).substr(3, 2);
+          endTimeH1 = day.at(interval0).substr(6, 2);
+          endTimeM1 = day.at(interval0).substr(9, 2);
 
           if(startTimeH1.length() != 2 || startTimeM1.length() != 2 || endTimeH1.length() != 2 || endTimeM1.length() != 2){
-            std::cerr << std::endl << "Formatting error in " << day.at(0) << " at " << day.at(i) << std::endl;
+            std::cerr << std::endl << "Formatting error in " << day.at(0) << " at " << day.at(interval0) << std::endl;
             std::cerr << "Time interval should be formatted as HH:MM-HH:MM" << std::endl;
             exit(1);
           }
 
-          startTimeSlot1 = ((stoi(startTimeH1) - 9) * 60 + stoi(startTimeM1)) / TIMESLOTDURATION;
-          endTimeSlot1 = (((stoi(endTimeH1) - 9) * 60 + stoi(endTimeM1))/ TIMESLOTDURATION) - 1;
+          startTimeSlot1 = ((stoi(startTimeH1) - 9) * 60 + stoi(startTimeM1)) / n_Solution::TIMESLOTDURATION;
+          endTimeSlot1 = (((stoi(endTimeH1) - 9) * 60 + stoi(endTimeM1))/ n_Solution::TIMESLOTDURATION) - 1;
 
           if(endTimeSlot1 < startTimeSlot1){
-            std::cerr << std::endl << "Input error in: " << day.at(i) << "; End time cannot be equal or less than Start time." << std::endl;
+            std::cerr << std::endl << "Input error in: " << day.at(interval0) << "; End time cannot be equal or less than Start time." << std::endl;
             exit(1);
           }
           if(startTimeSlot1 < 0){
             std::cerr << std::endl << "Timing error in " << day.at(0) << "; Start time should not be earlier than 09:00." << std::endl;
             exit(1);
           }
-          if(endTimeSlot1 > 107){
+          if(endTimeSlot1 > n_Solution::TIMESLOTCOUNT){
             std::cerr << std::endl << "Timing error in " << day.at(0) << "; End time should not be later than 18:00." << std::endl;
             exit(1);
           }
         }
         catch(...){
-          std::cerr << std::endl << "Formatting error in " << day.at(0) << " at " << day.at(i) << std::endl;
+          std::cerr << std::endl << "Formatting error in " << day.at(0) << " at " << day.at(interval0) << std::endl;
           exit(1);
         }
 
-        for(unsigned long j = i + 2; j < daySize; j=j+2){
-          if(i != j){
+        for(unsigned long interval1 = interval0 + 2; interval1 < daySize; interval1=interval1+2){
+          if(interval0 != interval1){
             std::string startTimeH2, endTimeH2, startTimeM2, endTimeM2;
             int  startTimeSlot2, endTimeSlot2;
             try{
-              startTimeH2 = day.at(j).substr(0, 2);
-              startTimeM2 = day.at(j).substr(3, 2);
-              endTimeH2 = day.at(j).substr(6, 2);
-              endTimeM2 = day.at(j).substr(9, 2);
+              startTimeH2 = day.at(interval1).substr(0, 2);
+              startTimeM2 = day.at(interval1).substr(3, 2);
+              endTimeH2 = day.at(interval1).substr(6, 2);
+              endTimeM2 = day.at(interval1).substr(9, 2);
 
               if(startTimeH2.length() == 1 || startTimeM2.length() == 1 || endTimeH2.length() == 1 || endTimeM2.length() == 1){
-                std::cerr << std::endl << "Formatting error in " << day.at(0) << " at " << day.at(j) << std::endl;
+                std::cerr << std::endl << "Formatting error in " << day.at(0) << " at " << day.at(interval1) << std::endl;
                 std::cerr << "Time interval should be formatted as HH:MM-HH:MM" << std::endl;
                 exit(1);
               }
 
-              startTimeSlot2 = ((stoi(startTimeH2) - 9) * 60 + stoi(startTimeM2)) / TIMESLOTDURATION;
-              endTimeSlot2 = (((stoi(endTimeH2) - 9) * 60 + stoi(endTimeM2))/ TIMESLOTDURATION) - 1;
+              startTimeSlot2 = ((stoi(startTimeH2) - 9) * 60 + stoi(startTimeM2)) / n_Solution::TIMESLOTDURATION;
+              endTimeSlot2 = (((stoi(endTimeH2) - 9) * 60 + stoi(endTimeM2))/ n_Solution::TIMESLOTDURATION) - 1;
 
               if(endTimeSlot2 < startTimeSlot2){
-                std::cerr << std::endl << "Input error in: " << day.at(j) << "; End time cannot be equal or less than Start time." << std::endl;
+                std::cerr << std::endl << "Input error in: " << day.at(interval1) << "; End time cannot be equal or less than Start time." << std::endl;
                 exit(1);
               }
               if(startTimeSlot2 < 0){
                 std::cerr << std::endl << "Timing error in " << day.at(0) << "; Start time should not be earlier than 09:00." << std::endl;
                 exit(1);
               }
-              if(endTimeSlot2 > TIMESLOTCOUNT - 1){
+              if(endTimeSlot2 > n_Solution::TIMESLOTCOUNT - 1){
                 std::cerr << std::endl << "Timing error in " << day.at(0) << "; End time should not be later than 18:00." << std::endl;
                 exit(1);
               }
             }
             catch(...){
-              std::cerr << std::endl << "Formatting error in: " << day.at(j) << std::endl;
+              std::cerr << std::endl << "Formatting error in: " << day.at(interval1) << std::endl;
               exit(1);
             }
             if(endTimeSlot1 >= startTimeSlot2 && startTimeSlot2 >= startTimeSlot1){
@@ -312,8 +312,8 @@ Vector2D<std::string> loadBlockedHours(const char* path) {
           exit(1);
         }
 
-        startTimeSlot = ((stoi(startTimeH) - 9) * 60 + stoi(startTimeM)) / TIMESLOTDURATION;
-        endTimeSlot = (((stoi(endTimeH) - 9) * 60 + stoi(endTimeM))/ TIMESLOTDURATION) - 1;
+        startTimeSlot = ((stoi(startTimeH) - 9) * 60 + stoi(startTimeM)) / n_Solution::TIMESLOTDURATION;
+        endTimeSlot = (((stoi(endTimeH) - 9) * 60 + stoi(endTimeM))/ n_Solution::TIMESLOTDURATION) - 1;
 
         if(endTimeSlot < startTimeSlot){
           std::cerr << "Input error in: " << day.at(0) << "; End time cannot be equal or less than Start time." << std::endl;
@@ -323,7 +323,7 @@ Vector2D<std::string> loadBlockedHours(const char* path) {
           std::cerr << "Timing error in " << day.at(0) << "; Start time should not be earlier than 09:00." << std::endl;
           exit(1);
         }
-        if(endTimeSlot > 107){
+        if(endTimeSlot > n_Solution::TIMESLOTCOUNT){
           std::cerr << "Timing error in " << day.at(0) << "; End time should not be later than 18:00." << std::endl;
           exit(1);
         }
@@ -338,15 +338,15 @@ Vector2D<std::string> loadBlockedHours(const char* path) {
   Vector2D<std::string> sortedBlockedDays;
 
   /* Sort days of the week starting from monday and fill in the missing days (if any)*/
-  for(unsigned long i = 0; i < 7; ++i){
-    for(unsigned long j = 0; j < dayCount; ++j){
-      if(blockedDays.at(j).at(0) == Main::DAYS_UPPERCASE.at(i)){
-        sortedBlockedDays.emplace_back(blockedDays.at(j));
+  for(unsigned long day = 0; day < 7; ++day){
+    for(unsigned long dayIndex = 0; dayIndex < dayCount; ++dayIndex){
+      if(blockedDays.at(dayIndex).at(0) == n_Main::DAYS_UPPERCASE.at(day)){
+        sortedBlockedDays.emplace_back(blockedDays.at(dayIndex));
         break;
       }
-      if(j+1 == dayCount){
+      if(dayIndex + 1 == dayCount){
         std::vector<std::string> temp;
-        temp.emplace_back(Main::DAYS_UPPERCASE.at(i));
+        temp.emplace_back(n_Main::DAYS_UPPERCASE.at(day));
         sortedBlockedDays.emplace_back(temp);
         break;
       }
@@ -358,26 +358,26 @@ Vector2D<std::string> loadBlockedHours(const char* path) {
 
 std::vector<Course> findConflictingCourses(std::vector<Course> courseList) {
   const unsigned long courseSize = courseList.size();
-  for (unsigned long i = 0; i < courseSize; ++i) {
-    for (unsigned long j = i + 1; j < courseSize; ++j) {
-      const unsigned long L2S = courseList.at(j).studentList.size();
-      std::string_view sj = Main::uniqueCourses.find(courseList.at(j).code)->first;
-      std::string_view si = Main::uniqueCourses.find(courseList.at(i).code)->first;
-      if (courseList.at(i).professorName.compare(courseList.at(j).professorName) == 0) {
-        courseList.at(i).conflictingCourses[sj] = true;
-        courseList.at(j).conflictingCourses[si] = true;
+  for (unsigned long c1Index = 0; c1Index < courseSize; ++c1Index) {
+    std::string_view c1Code = n_Main::uniqueCourses.find(courseList.at(c1Index).m_code)->first;
+    for (unsigned long c2Index = c1Index + 1; c2Index < courseSize; ++c2Index) {
+      const unsigned long c2StudentCnt = courseList.at(c2Index).m_studentList.size();
+      std::string_view c2Code = n_Main::uniqueCourses.find(courseList.at(c2Index).m_code)->first;
+      if (courseList.at(c1Index).m_professorName.compare(courseList.at(c2Index).m_professorName) == 0) {
+        courseList.at(c1Index).m_conflictingCourses[c2Code] = true;
+        courseList.at(c2Index).m_conflictingCourses[c1Code] = true;
         continue;
       }
-      if (courseList.at(j).conflictingCourses.count(courseList.at(i).code)) {
+      if (courseList.at(c2Index).m_conflictingCourses.count(courseList.at(c1Index).m_code)) {
         break;
       }
-      for (unsigned long l = 0; l < L2S; l++) {
-        if (std::binary_search(courseList.at(i).studentList.begin(),
-                                   courseList.at(i).studentList.end(),
-                                   courseList.at(j).studentList.at(l))) {
-          if (courseList.at(i).code != courseList.at(j).code) {
-            courseList.at(i).conflictingCourses[sj] = true;
-            courseList.at(j).conflictingCourses[si] = true;
+      for (unsigned long c2StudentIndex = 0; c2StudentIndex < c2StudentCnt; c2StudentIndex++) {
+        if (std::binary_search(courseList.at(c1Index).m_studentList.begin(),
+                                   courseList.at(c1Index).m_studentList.end(),
+                                   courseList.at(c2Index).m_studentList.at(c2StudentIndex))) {
+          if (strcmp(courseList.at(c1Index).m_code.c_str(), courseList.at(c2Index).m_code.c_str()) != 0) {
+            courseList.at(c1Index).m_conflictingCourses[c2Code] = true;
+            courseList.at(c2Index).m_conflictingCourses[c1Code] = true;
           }
         }
       }

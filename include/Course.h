@@ -10,14 +10,14 @@
 class Course {
 public:
     explicit Course(const std::string& professorName, const std::string& code, int examDuration, int studentCount = 0);
-    ~Course();
-    int studentCount;
-    int examDuration;
-    std::string_view professorName;
-    std::string code;
-    std::vector<int> studentList;
-    std::unordered_map<std::string_view, bool> conflictingCourses;
-    std::vector<Classroom> classrooms;
+    ~Course() = default;
+    u_int64_t m_studentCount;
+    u_int32_t m_examDuration;
+    std::string_view m_professorName;
+    std::string m_code;
+    std::vector<u_int32_t> m_studentList;
+    std::unordered_map<std::string_view, bool> m_conflictingCourses;
+    std::vector<Classroom> m_classrooms;
 };
 
 

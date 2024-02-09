@@ -5,15 +5,13 @@
 
 #include "Typedefs.h"
 
-CSV::CSV(const char* path, const char separator) {
+CSV::CSV(const char* path, const char separator) : m_rows(0), m_cols(-1) {
     FILE* fp = fopen(path, "r");
     if (fp == nullptr)
         throw errno;
 
     char in;
     std::string val;
-    m_rows = 0;
-    m_cols = -1;
     int col = 0;
     m_data.emplace_back();
     while (fscanf(fp, "%c", &in) != EOF) {
@@ -30,7 +28,6 @@ CSV::CSV(const char* path, const char separator) {
             if (m_cols == -1)
                 m_cols = col;
             if (col != m_cols) {
-                //std::cout << m_rows << std::endl;
                 throw errno;
             }
 
@@ -42,15 +39,16 @@ CSV::CSV(const char* path, const char separator) {
             val += in;
         }
     }
-    m_cols = m_data.at(0).size();
+    m_cols = static_cast<long>(m_data.at(0).size());
     m_data.pop_back();
 }
 
 void CSV::printRows(const std::string&separator) const {
-    for (auto&i: m_data) {
-        for (unsigned long j = 0; j < i.size(); ++j) {
-            std::cout << i.at(j);
-            if (j != i.size() - 1)
+    for (const auto& row: m_data) {
+        const u_int32_t rowSize = row.size();
+        for (u_int32_t col = 0; col < rowSize; ++col) {
+            std::cout << row.at(col);
+            if (col != rowSize - 1)
                 std::cout << separator;
         }
         std::cout << std::endl;
@@ -84,9 +82,7 @@ Vector2D<std::string> CSV::getData() {
     return m_data;
 }
 
-CSV::CSV() {}
-
 void CSV::removeHeader() {
-    m_rows--;
-    m_data.erase(m_data.begin(), m_data.begin()+1);
+    --m_rows;
+    m_data.erase(m_data.begin(), m_data.begin() + 1);
 }

@@ -7,7 +7,7 @@ public:
     explicit Student(int id);
     ~Student();
 
-    int id;
+    int m_id;
 
 };
 

@@ -6,64 +6,64 @@
 #include "Timeslot.h"
 #include "Classroom.h"
 
-#define TIMESLOTCOUNT 108
-#define TIMESLOTDURATION 5
-#define ITERATIONCOUNT 100
+namespace n_Solution {
+    inline constexpr u_int8_t TIMESLOTCOUNT = 108;
+    inline constexpr u_int8_t TIMESLOTDURATION = 5;
+    inline constexpr u_int8_t ITERATIONCOUNT = 100;
+    inline bool sundayUnlocked = false;
+    inline u_int32_t dimensionCount = 1;
+    inline std::vector<bool> placed;
+    inline const std::vector DAYS = {
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+        "Sunday",
+    };
 
-inline bool __Day7Needed = false;
-inline int __DimensionCount = 1;
-inline std::vector<bool> __placed;
-inline const std::vector __DAYS = {
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-    "Sunday",
-};
+    /* struct to wrap static 2D array into an "object" to be used in vectors */
+    typedef struct Week {
+        Timeslot week[7][TIMESLOTCOUNT];
+    } Week;
 
-/* struct to wrap static 2D array into an "object" to be used in vectors */
-typedef struct Week {
-    Timeslot t[7][TIMESLOTCOUNT];
-} Week;
+    /* simple struct to return more than one value from a function */
+    typedef struct classroomStatus {
+        int64_t wantedCapacity;
+        bool returnStatus;
+    } classroomStatus;
 
-/* simple struct to return more than one value from a function */
-typedef struct classroomStatus {
-    bool returnStatus;
-    int wantedCapacity;
-} classroomStatus;
-
-/* simple struct to return more than one value from a function */
-typedef struct scheduleStatus {
-    std::vector<Week> schedule;
-    std::vector<bool> placed;
-    int dim;
-    int cost;
-    bool day;
-} scheduleStatus;
-
-using namespace std;
+    /* simple struct to return more than one value from a function */
+    typedef struct scheduleStatus {
+        std::vector<Week> schedule;
+        u_int32_t dim;
+        int64_t cost;
+        std::vector<bool> placed;
+        bool day;
+    } scheduleStatus;
+}
 
 class Solution{
-public:
-    std::vector<Week> timeTable;
-    vector<Classroom> classList;
-    vector<Course> courseList;
+private:
+    std::vector<n_Solution::Week> timeTable;
+    std::vector<Classroom> classList;
+    std::vector<Course> courseList;
     Vector2D<std::string> blockedHours;
 
-    void Solve(int nValue);
-    inline scheduleStatus initializeSchedule();
-    int cost(vector<Week> &table, int dim);
-    inline bool fillTable(std::vector<Week> &schedule, unsigned long courseCount, std::vector<bool> &placed, int &dimensionCount, bool day7Needed);
-    static inline bool checkValidityPrint(vector<Week> &table);
-    inline void setBlockedHours(std::vector<Week> &schedule, Vector2D<std::string> blockedHours, int dim);
-    inline std::vector<Classroom> getAvailableClassrooms(int day, int start, int end);
-    inline classroomStatus assignClassrooms();
+    [[nodiscard]] inline n_Solution::scheduleStatus initializeSchedule() const;
+    static int cost(const std::vector<n_Solution::Week> &table, u_int32_t dim);
+    inline bool fillTable(std::vector<n_Solution::Week> &schedule, u_int64_t courseCount, std::vector<bool> &placed, u_int32_t &dimensionCount, bool sundayUnlocked) const;
+    static inline bool checkValidityPrint(const std::vector<n_Solution::Week> &table);
+    static inline void setBlockedHours(std::vector<n_Solution::Week> &schedule, const Vector2D<std::string> &blockedList, u_int32_t dim);
+    [[nodiscard]] inline std::vector<Classroom> getAvailableClassrooms(u_int8_t day, u_int8_t start, u_int8_t end) const;
+    inline n_Solution::classroomStatus assignClassrooms();
     inline void resetAssignedClassrooms();
-    static inline vector<Course> extractCoursesFromDay(std::vector<Week> &table, int day, int dim);
+    static inline std::vector<Course> extractCoursesFromDay(const std::vector<n_Solution::Week> &table, u_int8_t day, u_int32_t dimensionCount);
 
-    explicit Solution(const vector<Course>& list, const vector<Classroom>& classrooms, const Vector2D<std::string>& blockedHours);
+public:
+    explicit Solution(const std::vector<Course>& list, const std::vector<Classroom>& classrooms, const Vector2D<std::string>& blockedHours);
+    void Solve(int nValue);
 };
 
 #endif //SOLUTION_H

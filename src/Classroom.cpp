@@ -1,7 +1,5 @@
 #include "Classroom.h"
 
-Classroom::Classroom(int capacity, const std::string& id)
-    : capacity(capacity), id(id){
+Classroom::Classroom(const int capacity, const std::string& id)
+    : m_capacity(capacity), m_id(id){
 }
-Classroom::Classroom() = default;
-Classroom::~Classroom() = default;
