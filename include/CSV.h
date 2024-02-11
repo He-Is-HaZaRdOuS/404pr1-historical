@@ -2,14 +2,26 @@
 #ifndef CSV_H
 #define CSV_H
 
+#include "Main.h"
 #include "Typedefs.h"
+#include "Course.h"
+#include "Classroom.h"
+#include "Solution.h"
+
 #include <string>
+
+/* function prototypes */
+void loadCourses(const char* path, std::vector<Course>* courses);
+
+void loadClassrooms(const char* path, std::vector<Classroom>* classrooms);
+
+void loadBlockedHours(const char* path, Vector2D<std::string>* blockedHours);
 
 class CSV {
 private:
     Vector2D<std::string> m_data;
-    long m_rows;
-    long m_cols;
+    int64_t m_rows;
+    int64_t m_cols;
 
 public:
     explicit CSV(const char* path, char separator = ',');

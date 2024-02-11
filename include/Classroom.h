@@ -6,9 +6,9 @@
 
 class Classroom {
 public:
-    explicit Classroom(int capacity, const std::string& id);
+    explicit Classroom(uint32_t capacity, const std::string& id);
     ~Classroom() = default;
-    int32_t m_capacity;
+    uint32_t m_capacity;
     std::string m_id;
 
 private:

@@ -17,7 +17,7 @@ endif()
 if(CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo")
     message("BUILDING RELEASE WITH DEBUG INFO!")
     target_compile_options("${CMAKE_PROJECT_NAME}"
-            PUBLIC -W -Wall -Wextra -g -O2 -pedantic -pedantic-errors)
+            PUBLIC -W -Wall -Wextra -g -O2 -DDebug -pedantic -pedantic-errors)
 endif()
 
 if(CMAKE_BUILD_TYPE MATCHES "MinSizeRel")

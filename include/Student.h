@@ -1,13 +1,14 @@
 #pragma once
 #ifndef STUDENT_H
 #define STUDENT_H
+#include <cstdint>
 
 class Student {
 public:
-    explicit Student(int id);
+    explicit Student(uint32_t id);
     ~Student();
 
-    int m_id;
+    uint32_t m_id;
 
 };
 

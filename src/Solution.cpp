@@ -1,21 +1,19 @@
 #include "Solution.h"
 
+#include <Main.h>
 #include <algorithm>
+#include <cstring>
 #include <iostream>
+#include <limits>
 #include <random>
 #include <unordered_map>
-#include <limits>
-
-#include "Typedefs.h"
-
-#include <cstring>
 
 /* function prototypes */
 inline void printTimeTable(const std::vector<n_Solution::Week>&timeTable, const Vector2D<std::string>&blockedList);
 
 inline std::string getRegularTime(const std::string&str);
 
-inline std::string getRegularTime(u_int8_t startTimeH, u_int8_t startTimeM, u_int8_t endTimeH, u_int8_t endTimeM);
+inline std::string getRegularTime(uint8_t startTimeH, uint8_t startTimeM, uint8_t endTimeH, uint8_t endTimeM);
 
 /* constructor */
 Solution::Solution(const std::vector<Course>& list, const std::vector<Classroom>& classrooms, const Vector2D<std::string>& blockedHours)
@@ -24,15 +22,15 @@ Solution::Solution(const std::vector<Course>& list, const std::vector<Classroom>
 
 /* Generates N-many schedules and picks the best one out of the bunch */
 void Solution::Solve(const int nValue) {
-  u_int64_t N = nValue;
-  u_int64_t F = 0;
-  const u_int64_t LOWER_LIMIT = N / 2;
+  uint64_t N = nValue;
+  uint64_t F = 0;
+  const uint64_t LOWER_LIMIT = N / 2;
   n_Solution::scheduleStatus minSchedule;
 
   minSchedule = initializeSchedule();
   minSchedule.cost = cost(minSchedule.schedule, minSchedule.dim);
 
-  for(u_int64_t n = 0; n < N; ++n){
+  for(uint64_t n = 0; n < N; ++n){
     n_Solution::scheduleStatus newSchedule;
     newSchedule = initializeSchedule(); // make new random schedule
     if(newSchedule.cost == -2){ // failed to make schedule
@@ -122,9 +120,9 @@ void Solution::Solve(const int nValue) {
 
   // print schedule (WIP)
   // TODO: merge contiguous slots
-  for (u_int32_t d = 0; d < n_Solution::dimensionCount; ++d) {
+  for (uint32_t d = 0; d < n_Solution::dimensionCount; ++d) {
     printf("Dimension: %d\n", d);
-    for (u_int8_t slot = 0; slot < n_Solution::TIMESLOTCOUNT; ++slot)
+    for (uint8_t slot = 0; slot < n_Solution::TIMESLOTCOUNT; ++slot)
       printf("%02d:%02d %10s %10s %10s %10s %10s %10s %10s\n",
              9 + (slot * n_Solution::TIMESLOTDURATION) / 60, (slot * n_Solution::TIMESLOTDURATION) % 60,
              timeTable.at(d).week[0][slot].m_currentCourse.m_code.c_str(),
@@ -140,9 +138,9 @@ void Solution::Solve(const int nValue) {
 
 printTimeTable(timeTable, blockedHours);
 
-    const u_int64_t courseCount = courseList.size();
+    const uint64_t courseCount = courseList.size();
     int placedCount = 0;
-    for (u_int64_t index = 0; index < courseCount; ++index) {
+    for (uint64_t index = 0; index < courseCount; ++index) {
         if (n_Solution::placed.at(index)) {
             ++placedCount;
         }
@@ -168,17 +166,17 @@ printTimeTable(timeTable, blockedHours);
 inline n_Solution::scheduleStatus Solution::initializeSchedule() const {
 
      bool sundayNeeded = false;
-     u_int32_t dimensionCount = 1;
+     uint32_t dimensionCount = 1;
      int64_t returnValue = -1;
      std::vector<bool> placed;
      std::vector<n_Solution::Week> schedule;
 
-  const u_int64_t courseCount = courseList.size();
+  const uint64_t courseCount = courseList.size();
   placed = std::vector<bool>(courseCount);
   bool isFilled = false;
 
 do{
-  u_int8_t iterationCount = 0;
+  uint8_t iterationCount = 0;
   do {
     if(!isFilled) {
       /* initialize everything necessary */
@@ -186,7 +184,7 @@ do{
       ++iterationCount;
       dimensionCount = 1;
       // mark all courses as "not placed"
-      for (u_int32_t index = 0; index < courseCount; ++index) {
+      for (uint32_t index = 0; index < courseCount; ++index) {
         placed.at(index) = false;
       }
       /* shuffle vectors and try again */
@@ -221,32 +219,32 @@ do{
 }
 
 /* fill table linearly without causing conflicts */
-inline bool Solution::fillTable(std::vector<n_Solution::Week> &schedule, const u_int64_t courseCount, std::vector<bool> &placed, u_int32_t &dimensionCount, bool sundayUnlocked) const {
+inline bool Solution::fillTable(std::vector<n_Solution::Week> &schedule, const uint64_t courseCount, std::vector<bool> &placed, uint32_t &dimensionCount, bool sundayUnlocked) const {
   // for each slot...
-  for (u_int32_t dim = 0; dim < (int)dimensionCount; ++dim) {
+  for (uint32_t dim = 0; dim < (int)dimensionCount; ++dim) {
     if(schedule.size() < static_cast<unsigned long>(dimensionCount))
       schedule.push_back(n_Solution::Week{});
     setBlockedHours(schedule, blockedHours, dim);
     bool currentDimensionIsEmpty = true;
-    for (u_int8_t day = 0; day < (n_Solution::sundayUnlocked ? 7 : 6); ++day) {
-      for (u_int8_t slot = 0; slot < n_Solution::TIMESLOTCOUNT; ++slot) {
+    for (uint8_t day = 0; day < (n_Solution::sundayUnlocked ? 7 : 6); ++day) {
+      for (uint8_t slot = 0; slot < n_Solution::TIMESLOTCOUNT; ++slot) {
         // ... find a course to place contiguously
-        for (u_int32_t c = 0; c < courseCount; ++c) {
+        for (uint32_t c = 0; c < courseCount; ++c) {
           if (placed.at(c)) continue;
-          const u_int32_t courseTimePartition = courseList.at(c).m_examDuration / n_Solution::TIMESLOTDURATION;
+          const uint32_t courseTimePartition = courseList.at(c).m_examDuration / n_Solution::TIMESLOTDURATION;
           bool canFit = true;
           bool conflicts = false;
           bool sameProfessor = false;
 
           // check if exam can fit ...
-          for (u_int32_t index = 0; index < static_cast<int>(courseTimePartition); ++index) {
+          for (uint32_t index = 0; index < static_cast<int>(courseTimePartition); ++index) {
             if (slot + index >= n_Solution::TIMESLOTCOUNT || schedule.at(dim).week[day][slot + index].m_status != n_Timeslot::TimeSlotStatus::AVAILABLE || schedule.at(dim).week[day][slot + index].m_status == n_Timeslot::TimeSlotStatus::BLOCKED) {
 
               canFit = false;
               break;
             }
 
-            for(u_int32_t otherDim = 0; otherDim < dimensionCount; ++otherDim) {
+            for(uint32_t otherDim = 0; otherDim < dimensionCount; ++otherDim) {
               if(dim != otherDim) {
                 if(courseList.at(c).m_conflictingCourses.count(schedule.at(otherDim).week[day][slot+index].m_currentCourse.m_code)) {
                   //std::cout << schedule.at(otherDim).week[day][slot].currentCourse.code << std::endl;
@@ -264,7 +262,7 @@ inline bool Solution::fillTable(std::vector<n_Solution::Week> &schedule, const u
           // ... if so, place it
           if (canFit && !conflicts && !sameProfessor) {
             placed.at(c) = true;
-            for (u_int32_t index = 0; index < courseTimePartition; ++index) {
+            for (uint32_t index = 0; index < courseTimePartition; ++index) {
               currentDimensionIsEmpty = false;
               schedule.at(dim).week[day][slot+index].m_status = n_Timeslot::TimeSlotStatus::OCCUPIED;
               schedule.at(dim).week[day][slot+index].m_currentCourse = courseList.at(c);
@@ -286,7 +284,7 @@ inline bool Solution::fillTable(std::vector<n_Solution::Week> &schedule, const u
   schedule.pop_back();
 
   unsigned long placedCount = 0;
-  for (u_int64_t index = 0; index < courseCount; ++index) {
+  for (uint64_t index = 0; index < courseCount; ++index) {
     if (placed.at(index)) {
       ++placedCount;
     }
@@ -296,13 +294,13 @@ inline bool Solution::fillTable(std::vector<n_Solution::Week> &schedule, const u
 }
 
 /* fill time slots of blocked hours and block them from being used */
-void Solution::setBlockedHours(std::vector<n_Solution::Week> &schedule, const Vector2D<std::string> &blockedList, const u_int32_t dim) {
-  const u_int8_t blockedSize = blockedList.size();
-  for(u_int8_t day = 0; day < blockedSize; ++day) {
-    const u_int32_t blockedIntervalCnt = blockedList.at(day).size();
-    for(u_int32_t d = 1; d < blockedIntervalCnt; d=d+2) {
+void Solution::setBlockedHours(std::vector<n_Solution::Week> &schedule, const Vector2D<std::string> &blockedList, const uint32_t dim) {
+  const uint8_t blockedSize = blockedList.size();
+  for(uint8_t day = 0; day < blockedSize; ++day) {
+    const uint32_t blockedIntervalCnt = blockedList.at(day).size();
+    for(uint32_t d = 1; d < blockedIntervalCnt; d=d+2) {
       // Parse and set blocked hours
-      u_int8_t startTimeH, endTimeH, startTimeM, endTimeM;
+      uint8_t startTimeH, endTimeH, startTimeM, endTimeM;
       startTimeH = std::stoi(blockedList.at(day).at(d).substr(0, 2));
       startTimeM = std::stoi(blockedList.at(day).at(d).substr(3, 2));
       endTimeH = std::stoi(blockedList.at(day).at(d).substr(6, 2));
@@ -314,9 +312,9 @@ void Solution::setBlockedHours(std::vector<n_Solution::Week> &schedule, const Ve
       //std::cout << "startTimeSlot: " << startTimeSlot << " endTimeSlot: " << endTimeSlot << std::endl;
 
       // Marking the timeslots as "Blocked"
-      for (u_int32_t timeslot = startTimeSlot; timeslot <= endTimeSlot; ++timeslot) {
+      for (uint32_t timeslot = startTimeSlot; timeslot <= endTimeSlot; ++timeslot) {
         schedule[dim].week[day][timeslot].m_status = n_Timeslot::TimeSlotStatus::BLOCKED;
-        schedule[dim].week[day][timeslot].m_currentCourse = Course{"UNSPECIFIED", blockedList.at(day).at(d+1), 5 * (1 + endTimeSlot - startTimeSlot)};
+        schedule[dim].week[day][timeslot].m_currentCourse = Course{"UNSPECIFIED", blockedList.at(day).at(d+1), static_cast<uint32_t>(5 * (1 + endTimeSlot - startTimeSlot))};
       }
     }
   }
@@ -326,10 +324,10 @@ void Solution::setBlockedHours(std::vector<n_Solution::Week> &schedule, const Ve
 /* check the entire schedule for conflicting courses (same student or same professor at the same time) */
 inline bool Solution::checkValidityPrint(const std::vector<n_Solution::Week> &table) {
     bool week = true;
-    for (u_int32_t dim = 0; dim < n_Solution::dimensionCount; ++dim) {
-        for (u_int8_t day = 0; day < (n_Solution::sundayUnlocked ? 7 : 6); day++) {
-            for (u_int8_t slot = 0; slot < n_Solution::TIMESLOTCOUNT; ++slot) {
-                for(u_int8_t otherDim = 0; otherDim < n_Solution::dimensionCount; ++otherDim) {
+    for (uint32_t dim = 0; dim < n_Solution::dimensionCount; ++dim) {
+        for (uint8_t day = 0; day < (n_Solution::sundayUnlocked ? 7 : 6); day++) {
+            for (uint8_t slot = 0; slot < n_Solution::TIMESLOTCOUNT; ++slot) {
+                for(uint8_t otherDim = 0; otherDim < n_Solution::dimensionCount; ++otherDim) {
                     if(dim != otherDim && table.at(otherDim).week[day][slot].m_status == n_Timeslot::TimeSlotStatus::OCCUPIED && table.at(dim).week[day][slot].m_status == n_Timeslot::TimeSlotStatus::OCCUPIED)
                       if(table.at(dim).week[day][slot].m_currentCourse.m_conflictingCourses.count(table.at(otherDim).week[day][slot].m_currentCourse.m_code)) {
                           std::cout << "ILLEGAL " << table.at(otherDim).week[day][slot].m_currentCourse.m_code << " conflicts with " << table.at(dim).week[day][slot].m_currentCourse.m_conflictingCourses.find(table.at(otherDim).week[day][slot].m_currentCourse.m_code)->first << std::endl;
@@ -345,16 +343,16 @@ inline bool Solution::checkValidityPrint(const std::vector<n_Solution::Week> &ta
 
 /* return an integer representing how bad this schedule is for certain students */
 /* cost is incremented when a student has more than one exam on the same day */
-int Solution::cost(const std::vector<n_Solution::Week> &table, const u_int32_t dim) {
+int Solution::cost(const std::vector<n_Solution::Week> &table, const uint32_t dim) {
   int cost = 0;
 
-  for (u_int8_t day = 0; day < (n_Solution::sundayUnlocked ? 7 : 6); ++day) {
+  for (uint8_t day = 0; day < (n_Solution::sundayUnlocked ? 7 : 6); ++day) {
     std::vector<Course> dayList = extractCoursesFromDay(table, day, dim);
-    const u_int32_t dayListSize = dayList.size();
-    for (u_int32_t c1Index = 0; c1Index < dayListSize; ++c1Index) {
-      for (u_int32_t c2Index = c1Index + 1; c2Index < dayListSize; ++c2Index) {
-        const u_int32_t c2SSize = dayList.at(c2Index).m_studentCount;
-        for (u_int32_t s2Index = 0; s2Index < c2SSize; ++s2Index) {
+    const uint32_t dayListSize = dayList.size();
+    for (uint32_t c1Index = 0; c1Index < dayListSize; ++c1Index) {
+      for (uint32_t c2Index = c1Index + 1; c2Index < dayListSize; ++c2Index) {
+        const uint32_t c2SSize = dayList.at(c2Index).m_studentCount;
+        for (uint32_t s2Index = 0; s2Index < c2SSize; ++s2Index) {
             if (std::binary_search(dayList.at(c1Index).m_studentList.begin(),
                                    dayList.at(c1Index).m_studentList.end(),
                                    dayList.at(c2Index).m_studentList.at(s2Index))) {
@@ -372,19 +370,19 @@ int Solution::cost(const std::vector<n_Solution::Week> &table, const u_int32_t d
 }
 
 /* return a vector of non-intersecting classrooms for the given time interval */
-inline std::vector<Classroom> Solution::getAvailableClassrooms(const u_int8_t day, const u_int8_t start, const u_int8_t end) const {
-  const u_int32_t cSize = classList.size();
+inline std::vector<Classroom> Solution::getAvailableClassrooms(const uint8_t day, const uint8_t start, const uint8_t end) const {
+  const uint32_t cSize = classList.size();
   std::vector<Classroom> result;
   std::unordered_map<std::string, bool> availableClassrooms;
   for(const Classroom& c : classList) {
     availableClassrooms.emplace(c.m_id, true);
   }
 
-  for(u_int8_t dim = 0; dim < n_Solution::dimensionCount; ++dim) {
-    for(u_int8_t index = start; index < end; ++index) {
+  for(uint8_t dim = 0; dim < n_Solution::dimensionCount; ++dim) {
+    for(uint8_t index = start; index < end; ++index) {
       if(timeTable.at(dim).week[day][index].m_status == n_Timeslot::TimeSlotStatus::OCCUPIED) {
-        const u_int32_t size = timeTable.at(dim).week[day][index].m_currentCourse.m_classrooms.size();
-        for(u_int32_t roomIndex = 0; roomIndex < size; ++roomIndex) {
+        const uint32_t size = timeTable.at(dim).week[day][index].m_currentCourse.m_classrooms.size();
+        for(uint32_t roomIndex = 0; roomIndex < size; ++roomIndex) {
           availableClassrooms[timeTable.at(dim).week[day][index].m_currentCourse.m_classrooms.at(roomIndex).m_id] = false;
         }
       }
@@ -393,7 +391,7 @@ inline std::vector<Classroom> Solution::getAvailableClassrooms(const u_int8_t da
 
   for (const auto &[fst, snd] : availableClassrooms) {
     if(snd) {
-      for(u_int32_t index = 0; index < cSize; ++index) {
+      for(uint32_t index = 0; index < cSize; ++index) {
         if(classList.at(index).m_id == fst) {
           result.push_back(classList.at(index));
         }
@@ -409,9 +407,9 @@ inline void printTimeTable(const std::vector<n_Solution::Week>&timeTable, const 
 
   std::vector<std::pair<int,std::string>> exams;
 
-  for (u_int32_t dim = 0; dim < n_Solution::dimensionCount; dim++) {
-    for (u_int8_t day = 0; day < (n_Solution::sundayUnlocked ? 7 : 6); day++) {
-      for (u_int8_t slot = 0; slot < n_Solution::TIMESLOTCOUNT; slot++) {
+  for (uint32_t dim = 0; dim < n_Solution::dimensionCount; dim++) {
+    for (uint8_t day = 0; day < (n_Solution::sundayUnlocked ? 7 : 6); day++) {
+      for (uint8_t slot = 0; slot < n_Solution::TIMESLOTCOUNT; slot++) {
         if (timeTable.at(dim).week[day][slot].m_status == n_Timeslot::TimeSlotStatus::OCCUPIED) {
           const int32_t begin = slot * n_Solution::TIMESLOTDURATION;
           const int32_t end = begin + timeTable.at(dim).week[day][slot].m_currentCourse.m_examDuration;
@@ -454,7 +452,7 @@ inline void printTimeTable(const std::vector<n_Solution::Week>&timeTable, const 
 
   std::cout << "\nBlocked Hours: ";
 
-  u_int8_t blockedDay = 0;
+  uint8_t blockedDay = 0;
   bool blockedExists = false;
   for(const auto &row : blockedList) {
     if(row.size() > 1){
@@ -463,7 +461,7 @@ inline void printTimeTable(const std::vector<n_Solution::Week>&timeTable, const 
         std::cout << std::endl;
       }
       std::cout << n_Solution::DAYS[blockedDay] << std::endl;
-      for(u_int32_t dayIndex = 1; dayIndex < row.size(); dayIndex=dayIndex+2){
+      for(uint32_t dayIndex = 1; dayIndex < row.size(); dayIndex=dayIndex+2){
         std::cout << getRegularTime(row.at(dayIndex)) << "(" << row.at(dayIndex+1) << ")" << std::endl;
       }
       std::cout << std::endl;
@@ -478,7 +476,7 @@ inline void printTimeTable(const std::vector<n_Solution::Week>&timeTable, const 
 
 /* convert army time to regular time (00:00-24:00 -> 12:00 AM/PM) */
 inline std::string getRegularTime(const std::string&str){
-  u_int8_t startTimeH, endTimeH, startTimeM, endTimeM;
+  uint8_t startTimeH, endTimeH, startTimeM, endTimeM;
   startTimeH = std::stoi(str.substr(0, 2));
   startTimeM = std::stoi(str.substr(3, 2));
   endTimeH = std::stoi(str.substr(6, 2));
@@ -535,7 +533,7 @@ inline std::string getRegularTime(const std::string&str){
 }
 
 /* convert army time to regular time (00:00-24:00 -> 12:00 AM/PM) */
-inline std::string getRegularTime(u_int8_t startTimeH, const u_int8_t startTimeM, u_int8_t endTimeH, const u_int8_t endTimeM){
+inline std::string getRegularTime(uint8_t startTimeH, const uint8_t startTimeM, uint8_t endTimeH, const uint8_t endTimeM){
   bool startAM = true;
   bool endAM = true;
   std::string startH = std::to_string(startTimeH);
@@ -588,11 +586,11 @@ inline std::string getRegularTime(u_int8_t startTimeH, const u_int8_t startTimeM
 
 /* assign unused classrooms to timeslots */
 inline n_Solution::classroomStatus Solution::assignClassrooms(){
-  const u_int64_t classListSize = courseList.size();
-  for(u_int8_t day = 0; day < (n_Solution::sundayUnlocked ? 7 : 6); ++day){
-    for(u_int8_t slot = 0; slot < n_Solution::TIMESLOTCOUNT; ++slot){
-      for(u_int8_t dim = 0; dim < n_Solution::dimensionCount; ++dim) {
-        for(u_int64_t cSize = 0; cSize < classListSize; ++cSize) {
+  const uint64_t classListSize = courseList.size();
+  for(uint8_t day = 0; day < (n_Solution::sundayUnlocked ? 7 : 6); ++day){
+    for(uint8_t slot = 0; slot < n_Solution::TIMESLOTCOUNT; ++slot){
+      for(uint8_t dim = 0; dim < n_Solution::dimensionCount; ++dim) {
+        for(uint64_t cSize = 0; cSize < classListSize; ++cSize) {
           /* check if a course does not have any classrooms assigned yet */
           if(timeTable.at(dim).week[day][slot].m_currentCourse.m_classrooms.empty()) {
             /* find empty classrooms in given time interval */
@@ -610,11 +608,11 @@ inline n_Solution::classroomStatus Solution::assignClassrooms(){
                         return c1.m_capacity < c2.m_capacity;
                       });
 
-            const u_int64_t classSize = availableClassrooms.size();
-            const u_int64_t courseStudentCount = timeTable.at(dim).week[day][slot].m_currentCourse.m_studentCount;
+            const uint64_t classSize = availableClassrooms.size();
+            const uint64_t courseStudentCount = timeTable.at(dim).week[day][slot].m_currentCourse.m_studentCount;
             bool courseCanFitInOneClassroom = false;
             /* Assign a single classroom if half of its capacity fits the number of students */
-            for (u_int64_t cIndex = 0; cIndex < classSize; ++cIndex) {
+            for (uint64_t cIndex = 0; cIndex < classSize; ++cIndex) {
               // const unsigned long classRoomCount = timeTable.at(dim).week[day][slot].currentCourse.classrooms.size();
               if (availableClassrooms.at(cIndex).m_capacity / 2 >= static_cast<int>(courseStudentCount)) {
                 timeTable.at(dim).week[day][slot].m_currentCourse.m_classrooms.push_back(availableClassrooms.at(cIndex));
@@ -629,7 +627,7 @@ inline n_Solution::classroomStatus Solution::assignClassrooms(){
                 // assign biggest available classroom and update variable
                 assignedCapacity = assignedCapacity + (availableClassrooms.at(index).m_capacity / 2);
                 timeTable.at(dim).week[day][slot].m_currentCourse.m_classrooms.push_back(availableClassrooms.at(index));
-                for (u_int64_t roomIndex = 0; roomIndex < index; ++roomIndex) {
+                for (uint64_t roomIndex = 0; roomIndex < index; ++roomIndex) {
                   if ((availableClassrooms.at(roomIndex).m_capacity / 2) + assignedCapacity >= courseStudentCount) {
                     assignedCapacity = assignedCapacity + (availableClassrooms.at(roomIndex).m_capacity / 2);
                     timeTable.at(dim).week[day][slot].m_currentCourse.m_classrooms.push_back(availableClassrooms.at(roomIndex));
@@ -653,9 +651,9 @@ inline n_Solution::classroomStatus Solution::assignClassrooms(){
 
 /* erase assigned classrooms from timeslots */
 void Solution::resetAssignedClassrooms() {
-  for (u_int8_t dim = 0; dim < n_Solution::dimensionCount; ++dim){
-    for(u_int8_t day = 0; day < (n_Solution::sundayUnlocked ? 7 : 6); ++day){
-      for (u_int8_t slot = 0; slot < n_Solution::TIMESLOTCOUNT; ++slot) {
+  for (uint8_t dim = 0; dim < n_Solution::dimensionCount; ++dim){
+    for(uint8_t day = 0; day < (n_Solution::sundayUnlocked ? 7 : 6); ++day){
+      for (uint8_t slot = 0; slot < n_Solution::TIMESLOTCOUNT; ++slot) {
         timeTable.at(dim).week[day][slot].m_currentCourse.m_classrooms.clear();
       }
     }
@@ -663,10 +661,10 @@ void Solution::resetAssignedClassrooms() {
 }
 
 /* return a list of courses from a specific day */
-inline std::vector<Course> Solution::extractCoursesFromDay(const std::vector<n_Solution::Week> &table, const u_int8_t day, const u_int32_t dimensionCount){
+inline std::vector<Course> Solution::extractCoursesFromDay(const std::vector<n_Solution::Week> &table, const uint8_t day, const uint32_t dimensionCount){
     std::vector<Course> list;
-    for(u_int8_t dim = 0; dim < dimensionCount; ++dim){
-        for(u_int8_t slot = 0; slot < n_Solution::TIMESLOTCOUNT; ++slot){
+    for(uint8_t dim = 0; dim < dimensionCount; ++dim){
+        for(uint8_t slot = 0; slot < n_Solution::TIMESLOTCOUNT; ++slot){
             // fetch course and skip ahead
             list.push_back(table.at(dim).week[day][slot].m_currentCourse);
             slot = slot + table.at(dim).week[day][slot].m_currentCourse.m_examDuration / n_Solution::TIMESLOTDURATION;
