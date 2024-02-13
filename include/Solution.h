@@ -52,9 +52,9 @@ private:
     std::vector<Course> courseList;
     Vector2D<std::string> blockedHours;
 
-    [[nodiscard]] inline n_Solution::scheduleStatus initializeSchedule() const;
-    [[nodiscard]] inline std::vector<Classroom> getAvailableClassrooms(uint8_t day, uint8_t start, uint8_t end) const;
-    static int cost(const std::vector<n_Solution::Week> &table, uint32_t dim);
+    [[nodiscard]] inline n_Solution::scheduleStatus initializeSchedule();
+    [[nodiscard]] inline std::vector<Classroom> getAvailableClassrooms(uint8_t day, uint8_t start, uint32_t end) const;
+    static int64_t cost(const std::vector<n_Solution::Week> &table, uint32_t dim);
     static inline std::vector<Course> extractCoursesFromDay(const std::vector<n_Solution::Week> &table, uint8_t day, uint32_t dimensionCount);
     static inline bool checkValidityPrint(const std::vector<n_Solution::Week> &table);
     static inline void setBlockedHours(std::vector<n_Solution::Week> &schedule, const Vector2D<std::string> &blockedList, uint32_t dim);
@@ -64,7 +64,7 @@ private:
 
 public:
     explicit Solution(const std::vector<Course>& list, const std::vector<Classroom>& classrooms, const Vector2D<std::string>& blockedHours);
-    void Solve(int nValue);
+    void Solve(int32_t nValue);
 };
 
 #endif //SOLUTION_H
