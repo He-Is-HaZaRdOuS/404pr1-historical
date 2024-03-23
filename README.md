@@ -1,3 +1,6 @@
+This is now deprecated. </br>
+Development moved to a [New repository](https://github.com/rhyrak/go-schedule) && [My fork](https://github.com/He-Is-HaZaRdOuS/go-schedule)
+
 # 404pr1
 Placeholder repository for CENG404's project. </br>
 https://github.com/He-Is-HaZaRdOuS/404pr1 </br>
